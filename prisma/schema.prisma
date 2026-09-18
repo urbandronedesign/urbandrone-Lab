@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  year        Int
+  category    String
+  description String   @default("") // markdown
+  credits     String   @default("")
+  coverId     String?
+  cover       Image?   @relation("ProjectCover", fields: [coverId], references: [id], onDelete: SetNull)
+  images      Image[]  @relation("ProjectImages")
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@index([published])
+}
+
+model Image {
+  id        String    @id @default(cuid())
+  url       String
+  width     Int?
+  height    Int?
+  alt       String    @default("")
+  projectId String?
+  project   Project?  @relation("ProjectImages", fields: [projectId], references: [id], onDelete: Cascade)
+  coverFor  Project[] @relation("ProjectCover")
+  createdAt DateTime  @default(now())
+
+  @@index([projectId])
+}
