@@ -1,4 +1,15 @@
-# Pointing urbandrone.xyz at GitHub Pages (leaving Netlify)
+# Pointing urbandrone.xyz at GitHub Pages
+
+> **Done on 2026-09-20 — current state.** The domain is served by GitHub Pages with
+> HTTPS enforced. DNS stayed at **Netlify DNS** (free, no Netlify site): the four
+> `NETLIFY`/`NETLIFYv6` records were deleted and replaced by four `A` records to
+> GitHub's IPs (185.199.108–111.153) plus `CNAME www → urbandronedesign.github.io`.
+> GitHub stalled the certificate because the custom domain had been set before DNS
+> pointed at it; removing and re-adding the domain (Settings → Pages, or
+> `gh api -X PUT repos/urbandronedesign/urbandrone-Lab/pages -f cname=…`) fixed it
+> within a minute. The OVH procedure below remains valid if DNS should ever move
+> away from Netlify entirely.
+
 
 Goal: `https://urbandrone.xyz` served directly by GitHub Pages, DNS hosted at
 OVH (the registrar), Netlify no longer involved.
