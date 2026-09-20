@@ -60,6 +60,9 @@ export default async function HomePage() {
           <h2 id="about-title" className="t-label text-muted-foreground md:col-span-3">About</h2>
           <div className="md:col-span-7">
             {site.about ? <Prose text={site.about} className="t-lead max-w-[60ch]" /> : <p className="t-lead text-muted-foreground">{site.description}</p>}
+            <Link href="/bio/" className="t-label mt-8 inline-flex cursor-pointer items-center gap-2 py-2 transition-colors hover:text-muted-foreground">
+              Full biography <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </Link>
             {(site.email || site.links.length > 0) && (
               <ul className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
                 {site.email && (

@@ -103,6 +103,7 @@ model Image {
   projectId String?
   project   Project?  @relation("ProjectImages", fields: [projectId], references: [id], onDelete: Cascade)
   coverFor  Project[] @relation("ProjectCover")
+  bioFor    Bio[]     @relation("BioPortrait")
   createdAt DateTime  @default(now())
 
   @@index([projectId])
@@ -146,4 +147,16 @@ model Site {
   linksJson   String   @default("[]") // [{ label, url }]
   about       String   @default("") // statement shown on the home page (paragraphs)
   updatedAt   DateTime @updatedAt
+}
+
+// Biography page (single row, id = "bio"): portrait, headline, text and a
+// CV-style list stored as JSON [{ group, year, text, url }].
+model Bio {
+  id         String   @id @default("bio")
+  headline   String   @default("")
+  text       String   @default("")
+  portraitId String?
+  portrait   Image?   @relation("BioPortrait", fields: [portraitId], references: [id], onDelete: SetNull)
+  cvJson     String   @default("[]")
+  updatedAt  DateTime @updatedAt
 }

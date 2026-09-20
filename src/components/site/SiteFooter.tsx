@@ -21,7 +21,7 @@ export function SiteFooter() {
         <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 md:col-span-4">
           <Link href="/artworks/" className="t-caption cursor-pointer text-muted-foreground transition-colors hover:text-foreground">Artworks</Link>
           <Link href="/lab/" className="t-caption cursor-pointer text-muted-foreground transition-colors hover:text-foreground">Lab</Link>
-          <Link href="/#about" className="t-caption cursor-pointer text-muted-foreground transition-colors hover:text-foreground">About</Link>
+          <Link href="/bio/" className="t-caption cursor-pointer text-muted-foreground transition-colors hover:text-foreground">Bio</Link>
           {site.email && (
             <a href={`mailto:${site.email}`} className="t-caption cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
               Contact

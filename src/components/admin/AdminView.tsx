@@ -33,7 +33,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Loader2, LogOut, Hexagon, UserRound, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Loader2, LogOut, Hexagon, UserRound, Settings2, BookUser } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useUpdateProject } from '@/lib/queries';
@@ -252,6 +252,12 @@ export function AdminView() {
                 <Link href="/admin/site">
                   <Settings2 className="mr-2 h-3.5 w-3.5" />
                   Site
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild title="Biography page">
+                <Link href="/admin/bio">
+                  <BookUser className="mr-2 h-3.5 w-3.5" />
+                  Bio
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" asChild title="Account settings">

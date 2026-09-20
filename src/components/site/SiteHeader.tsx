@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const NAV = [
   { href: '/artworks/', label: 'Artworks' },
   { href: '/lab/', label: 'Lab' },
-  { href: '/#about', label: 'About' },
+  { href: '/bio/', label: 'Bio' },
 ];
 
 function isActive(pathname: string, href: string) {
