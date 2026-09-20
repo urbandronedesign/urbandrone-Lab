@@ -150,7 +150,9 @@ Launcher on the owner's PC: `admin.cmd` → `scripts/admin.js` (both gitignored)
 - Browser cache: Pages sends `max-age=600`; hard-reload to see a fresh publish sooner.
 - Analytics: **GoatCounter** (code `urbandrone`, no cookies, no consent bar); API
   token in `.env` feeds the dashboard. GA was removed on purpose.
-- SEO: see SEO.md. Search Console / Bing registration still to be done by the owner.
+- SEO: see SEO.md. Bing verified (`public/BingSiteAuth.xml`); Google Search Console
+  pending the owner's TXT record in Netlify DNS + sitemap fetch. Titles 30–60 and
+  descriptions 70–160 chars are enforced by `lib/seo.ts` (`projectTitle`, `clip`).
 
 ## 9. Environment (`.env`, never committed)
 
