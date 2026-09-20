@@ -146,7 +146,7 @@ model Site {
   keywords    String   @default("") // comma-separated
   linksJson   String   @default("[]") // [{ label, url }]
   about       String   @default("") // statement shown on the home page (paragraphs)
-  gaMeasurementId String @default("") // Google Analytics 4 "G-XXXXXXXXXX"; empty = no analytics
+  goatcounterCode String @default("") // GoatCounter site code (<code>.goatcounter.com); empty = no analytics
   updatedAt   DateTime @updatedAt
 }
 

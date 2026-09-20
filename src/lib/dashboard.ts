@@ -182,69 +182,89 @@ export async function deployState(remote: GitState['remote']): Promise<DeploySta
   }
 }
 
-// ---------------------------------------------------------------- analytics (GA4 Data API)
+// ---------------------------------------------------------------- analytics (GoatCounter API)
 export type AnalyticsReport = {
-  configured: boolean;
-  propertyId: string | null;
+  configured: boolean; // site code set AND api token present
+  code: string | null;
   error: string | null;
   range: { start: string; end: string };
-  totals: { users: number; sessions: number; pageviews: number; avgEngagementSec: number };
-  daily: { date: string; users: number; pageviews: number }[];
-  pages: { path: string; views: number }[];
-  countries: { country: string; users: number }[];
-  referrers: { source: string; sessions: number }[];
-  realtime: number | null;
+  totals: { visitors: number; today: number; perDay: number; countries: number };
+  daily: { date: string; visitors: number }[];
+  pages: { path: string; visitors: number }[];
+  countries: { code: string; name: string; visitors: number }[];
+  referrers: { source: string; visitors: number }[];
+  browsers: { name: string; visitors: number }[];
+  systems: { name: string; visitors: number }[];
 };
 
-let gaCache: { at: number; report: AnalyticsReport } | null = null;
-const GA_TTL_MS = 10 * 60 * 1000;
+let gcCache: { at: number; report: AnalyticsReport } | null = null;
+const GC_TTL_MS = 10 * 60 * 1000;
 
-export function analyticsConfigured(): { propertyId: string | null; credentials: string | null } {
-  return { propertyId: process.env.GA_PROPERTY_ID?.trim() || null, credentials: process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim() || null };
+export function analyticsConfigured(): { token: boolean } {
+  return { token: !!process.env.GOATCOUNTER_API_TOKEN?.trim() };
 }
 
+type HitStat = { id?: string; name: string; count: number };
+
 export async function analyticsReport(force = false): Promise<AnalyticsReport> {
-  const { propertyId, credentials } = analyticsConfigured();
+  const site = await getSite();
+  const code = site.goatcounterCode || null;
+  const token = process.env.GOATCOUNTER_API_TOKEN?.trim();
   const end = new Date();
   const start = new Date(end.getTime() - 29 * 864e5);
-  const range = { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const range = { start: iso(start), end: iso(end) };
   const empty: AnalyticsReport = {
-    configured: false, propertyId, error: null, range,
-    totals: { users: 0, sessions: 0, pageviews: 0, avgEngagementSec: 0 },
-    daily: [], pages: [], countries: [], referrers: [], realtime: null,
+    configured: false, code, error: null, range,
+    totals: { visitors: 0, today: 0, perDay: 0, countries: 0 },
+    daily: [], pages: [], countries: [], referrers: [], browsers: [], systems: [],
   };
-  if (!propertyId || !credentials) return empty;
-  if (!force && gaCache && Date.now() - gaCache.at < GA_TTL_MS) return gaCache.report;
+  if (!code || !token) return empty;
+  if (!force && gcCache && Date.now() - gcCache.at < GC_TTL_MS) return gcCache.report;
+
+  const base = `https://${code}.goatcounter.com/api/v0`;
+  const q = `start=${range.start}T00:00:00Z&end=${iso(new Date(end.getTime() + 864e5))}T00:00:00Z`;
+  const get = async <T,>(pathAndQuery: string): Promise<T> => {
+    const res = await fetch(`${base}${pathAndQuery}`, {
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', 'user-agent': 'urbandrone admin' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error(`GoatCounter ${res.status} on ${pathAndQuery.split('?')[0]}${res.status === 401 ? ' — check GOATCOUNTER_API_TOKEN' : ''}`);
+    return (await res.json()) as T;
+  };
 
   try {
-    const { BetaAnalyticsDataClient } = await import('@google-analytics/data');
-    const client = new BetaAnalyticsDataClient({ keyFilename: path.isAbsolute(credentials) ? credentials : path.join(/* turbopackIgnore: true */ ROOT, credentials) });
-    const property = `properties/${propertyId}`;
-    const dateRanges = [{ startDate: '30daysAgo', endDate: 'today' }];
-
-    const [[daily], [totals], [pages], [countries], [referrers], realtime] = await Promise.all([
-      client.runReport({ property, dateRanges, dimensions: [{ name: 'date' }], metrics: [{ name: 'activeUsers' }, { name: 'screenPageViews' }], orderBys: [{ dimension: { dimensionName: 'date' } }] }),
-      client.runReport({ property, dateRanges, metrics: [{ name: 'activeUsers' }, { name: 'sessions' }, { name: 'screenPageViews' }, { name: 'averageSessionDuration' }] }),
-      client.runReport({ property, dateRanges, dimensions: [{ name: 'pagePath' }], metrics: [{ name: 'screenPageViews' }], orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }], limit: 8 }),
-      client.runReport({ property, dateRanges, dimensions: [{ name: 'country' }], metrics: [{ name: 'activeUsers' }], orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }], limit: 8 }),
-      client.runReport({ property, dateRanges, dimensions: [{ name: 'sessionSource' }], metrics: [{ name: 'sessions' }], orderBys: [{ metric: { metricName: 'sessions' }, desc: true }], limit: 8 }),
-      client.runRealtimeReport({ property, metrics: [{ name: 'activeUsers' }] }).then(([r]) => Number(r.rows?.[0]?.metricValues?.[0]?.value ?? 0)).catch(() => null),
-    ]);
-    const n = (v: string | null | undefined) => Number(v ?? 0);
-    const t = totals.rows?.[0]?.metricValues ?? [];
+    // Four calls, sequential to stay well under the 4 req/s limit
+    const total = await get<{ total: number; stats: { day: string; daily: number }[] }>(`/stats/total?${q}`);
+    const hits = await get<{ hits: { path: string; count: number; event: boolean }[] }>(`/stats/hits?${q}&limit=10`);
+    const locations = await get<{ stats: HitStat[] }>(`/stats/locations?${q}&limit=250`);
+    const refs = await get<{ stats: HitStat[] }>(`/stats/toprefs?${q}&limit=10`);
+    let browsers: HitStat[] = [];
+    let systems: HitStat[] = [];
+    try {
+      browsers = (await get<{ stats: HitStat[] }>(`/stats/browsers?${q}&limit=6`)).stats;
+      systems = (await get<{ stats: HitStat[] }>(`/stats/systems?${q}&limit=6`)).stats;
+    } catch {
+      /* optional */
+    }
+    const daily = (total.stats ?? []).map((d) => ({ date: d.day.slice(0, 10), visitors: d.daily }));
+    const countries = (locations.stats ?? []).filter((c) => c.id && c.count > 0).map((c) => ({ code: c.id!.toUpperCase(), name: c.name || c.id!, visitors: c.count }));
     const report: AnalyticsReport = {
-      configured: true, propertyId, error: null, range,
-      totals: { users: n(t[0]?.value), sessions: n(t[1]?.value), pageviews: n(t[2]?.value), avgEngagementSec: Math.round(n(t[3]?.value)) },
-      daily: (daily.rows ?? []).map((r) => {
-        const d = r.dimensionValues?.[0]?.value ?? '';
-        return { date: `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`, users: n(r.metricValues?.[0]?.value), pageviews: n(r.metricValues?.[1]?.value) };
-      }),
-      pages: (pages.rows ?? []).map((r) => ({ path: r.dimensionValues?.[0]?.value ?? '', views: n(r.metricValues?.[0]?.value) })),
-      countries: (countries.rows ?? []).map((r) => ({ country: r.dimensionValues?.[0]?.value ?? '', users: n(r.metricValues?.[0]?.value) })),
-      referrers: (referrers.rows ?? []).map((r) => ({ source: r.dimensionValues?.[0]?.value ?? '', sessions: n(r.metricValues?.[0]?.value) })),
-      realtime,
+      configured: true, code, error: null, range,
+      totals: {
+        visitors: total.total ?? daily.reduce((n, d) => n + d.visitors, 0),
+        today: daily.find((d) => d.date === range.end)?.visitors ?? 0,
+        perDay: daily.length ? Math.round(daily.reduce((n, d) => n + d.visitors, 0) / daily.length) : 0,
+        countries: countries.length,
+      },
+      daily,
+      pages: (hits.hits ?? []).filter((h) => !h.event).map((h) => ({ path: h.path, visitors: h.count })),
+      countries,
+      referrers: (refs.stats ?? []).map((r) => ({ source: r.name || '(direct)', visitors: r.count })),
+      browsers: browsers.map((b) => ({ name: b.name, visitors: b.count })),
+      systems: systems.map((b) => ({ name: b.name, visitors: b.count })),
     };
-    gaCache = { at: Date.now(), report };
+    gcCache = { at: Date.now(), report };
     return report;
   } catch (e: any) {
     return { ...empty, configured: true, error: e?.message ?? String(e) };

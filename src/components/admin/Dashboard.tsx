@@ -12,16 +12,17 @@ import { useStartSync } from '@/lib/queries';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AdminNav } from './AdminNav';
+import { WorldMap } from './WorldMap';
 
 type Data = {
   content: ContentStats;
   git: GitState;
   deploy: DeployState;
   analytics: AnalyticsReport;
-  analyticsEnv: { propertyId: string | null; credentials: string | null };
+  analyticsEnv: { token: boolean };
   sync: SyncProgress;
   wallets: string[];
-  site: { name: string; url: string; gaMeasurementId: string };
+  site: { name: string; url: string; goatcounterCode: string };
   generatedAt: string;
 };
 
@@ -93,7 +94,7 @@ function ChartTip({ active, payload, label }: { active?: boolean; payload?: { va
   return (
     <div className="border border-border bg-background px-2.5 py-1.5 text-xs shadow-sm">
       <p className="tracking-mono text-[10px] text-muted-foreground">{label}</p>
-      <p className="tabular-nums">{fmtNum(payload[0].value)} page views</p>
+      <p className="tabular-nums">{fmtNum(payload[0].value)} visitors</p>
     </div>
   );
 }
@@ -271,35 +272,46 @@ export function Dashboard() {
           aside={
             a.configured && !a.error ? (
               <div className="flex items-center gap-4 tracking-mono text-[10px] text-muted-foreground">
-                {a.realtime !== null && <span>{a.realtime} online now</span>}
                 <button type="button" onClick={() => fetch('/api/dashboard?refresh=1').then(() => refetch())} className="hover:text-foreground">refresh</button>
-                <a href={`https://analytics.google.com/analytics/web/#/p${a.propertyId}/reports/intelligenthome`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">
-                  open GA <ExternalLink className="h-3 w-3" />
+                <a href={`https://${a.code}.goatcounter.com`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">
+                  open GoatCounter <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
             ) : null
           }
         >
-          {!data.site.gaMeasurementId ? (
+          {!data.site.goatcounterCode ? (
             <Setup step={1} />
           ) : !a.configured ? (
-            <Setup step={2} />
+            <Setup step={2} code={data.site.goatcounterCode} />
           ) : a.error ? (
             <div className="space-y-2 text-xs">
-              <p className="text-destructive">Google Analytics API error: {a.error}</p>
-              <Setup step={2} compact />
+              <p className="text-destructive">{a.error}</p>
+              <Setup step={2} code={data.site.goatcounterCode} compact />
             </div>
           ) : (
             <div className="space-y-8">
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-                <Tile label="visitors" value={fmtNum(a.totals.users)} />
-                <Tile label="sessions" value={fmtNum(a.totals.sessions)} />
-                <Tile label="page views" value={fmtNum(a.totals.pageviews)} />
-                <Tile label="avg. session" value={`${Math.floor(a.totals.avgEngagementSec / 60)}:${String(a.totals.avgEngagementSec % 60).padStart(2, '0')}`} hint="minutes" />
+                <Tile label="visitors · 30 days" value={fmtNum(a.totals.visitors)} />
+                <Tile label="today" value={fmtNum(a.totals.today)} />
+                <Tile label="per day" value={fmtNum(a.totals.perDay)} hint="average" />
+                <Tile label="countries" value={fmtNum(a.totals.countries)} />
               </div>
+
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                <div>
+                  <p className="mb-2 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Visitors by country</p>
+                  <WorldMap rows={a.countries} />
+                </div>
+                <div>
+                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Top countries</p>
+                  <Bars rows={a.countries.slice(0, 10).map((x) => ({ label: x.name, value: x.visitors }))} />
+                </div>
+              </div>
+
               <div>
-                <p className="mb-2 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Page views per day</p>
-                <div className="h-48 w-full">
+                <p className="mb-2 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Visitors per day</p>
+                <div className="h-44 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={a.daily} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                       <defs>
@@ -311,23 +323,28 @@ export function Dashboard() {
                       <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} axisLine={{ stroke: 'var(--border)' }} tickLine={false} minTickGap={24} />
                       <YAxis width={36} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} axisLine={false} tickLine={false} allowDecimals={false} />
                       <Tooltip content={<ChartTip />} cursor={{ stroke: 'var(--border)' }} />
-                      <Area type="monotone" dataKey="pageviews" stroke="var(--foreground)" strokeWidth={2} fill="url(#pv)" dot={false} activeDot={{ r: 4, stroke: 'var(--background)', strokeWidth: 2, fill: 'var(--foreground)' }} isAnimationActive={false} />
+                      <Area type="monotone" dataKey="visitors" stroke="var(--foreground)" strokeWidth={2} fill="url(#pv)" dot={false} activeDot={{ r: 4, stroke: 'var(--background)', strokeWidth: 2, fill: 'var(--foreground)' }} isAnimationActive={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="grid gap-8 md:grid-cols-3">
+
+              <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
                 <div>
-                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Top pages · views</p>
-                  <Bars rows={a.pages.map((p) => ({ label: p.path, value: p.views, href: data.site.url ? `${data.site.url}${p.path}` : undefined }))} />
+                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Top pages</p>
+                  <Bars rows={a.pages.map((p) => ({ label: p.path, value: p.visitors, href: data.site.url ? `${data.site.url}${p.path}` : undefined }))} />
                 </div>
                 <div>
-                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Countries · visitors</p>
-                  <Bars rows={a.countries.map((x) => ({ label: x.country, value: x.users }))} />
+                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Sources</p>
+                  <Bars rows={a.referrers.map((x) => ({ label: x.source, value: x.visitors }))} />
                 </div>
                 <div>
-                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Sources · sessions</p>
-                  <Bars rows={a.referrers.map((x) => ({ label: x.source, value: x.sessions }))} />
+                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Browsers</p>
+                  <Bars rows={a.browsers.map((x) => ({ label: x.name, value: x.visitors }))} />
+                </div>
+                <div>
+                  <p className="mb-3 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Systems</p>
+                  <Bars rows={a.systems.map((x) => ({ label: x.name, value: x.visitors }))} />
                 </div>
               </div>
             </div>
@@ -340,25 +357,29 @@ export function Dashboard() {
   );
 }
 
-function Setup({ step, compact = false }: { step: 1 | 2; compact?: boolean }) {
+function Setup({ step, code, compact = false }: { step: 1 | 2; code?: string; compact?: boolean }) {
   return (
     <div className="max-w-[70ch] space-y-3 text-xs text-muted-foreground">
-      {!compact && <p className="text-sm text-foreground">{step === 1 ? 'Analytics is not set up yet.' : 'Visitors are being counted — connect the reporting API to see them here.'}</p>}
+      {!compact && <p className="text-sm text-foreground">{step === 1 ? 'Analytics is not set up yet.' : 'Visits are being counted — add an API token to see them here.'}</p>}
       <ol className="list-decimal space-y-2 pl-5">
         <li className={step > 1 ? 'line-through' : ''}>
-          Create a <strong>Google Analytics 4</strong> property for the site, add a <em>Web</em> data stream and copy its <strong>Measurement ID</strong> (G-…) into{' '}
-          <Link href="/admin/site" className="underline underline-offset-4">Site → Analytics</Link>. Publish. The public site then shows a consent bar and counts accepted visits.
+          Create a free account at{' '}
+          <a href="https://www.goatcounter.com/signup" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">goatcounter.com</a>{' '}
+          (free for personal, non-commercial sites; no cookies, so no consent bar). Choose a code — it becomes <span className="tracking-mono">code.goatcounter.com</span>.
+        </li>
+        <li className={step > 1 ? 'line-through' : ''}>
+          Paste that code into <Link href="/admin/site" className="underline underline-offset-4">Site → Analytics</Link> and publish. The public site starts counting.
         </li>
         <li>
-          In <strong>Google Cloud</strong>: create a project, enable the <em>Google Analytics Data API</em>, create a <em>service account</em> and download its JSON key.
-        </li>
-        <li>
-          In <strong>GA → Admin → Property access management</strong>, add the service-account e-mail as <em>Viewer</em>.
-        </li>
-        <li>
-          Save the key next to the project (it is gitignored as <code className="tracking-mono">ga-credentials.json</code>) and add to <code className="tracking-mono">.env</code>:
-          <pre className="mt-1 whitespace-pre-wrap bg-muted p-2 tracking-mono text-[10px] text-foreground">{`GA_PROPERTY_ID=123456789        # GA → Admin → Property details (numeric, not the G- id)\nGOOGLE_APPLICATION_CREDENTIALS=./ga-credentials.json`}</pre>
+          In GoatCounter → <strong>Settings → API</strong>, create a token with the <em>Read statistics</em> permission and add it to <code className="tracking-mono">.env</code>:
+          <pre className="mt-1 whitespace-pre-wrap bg-muted p-2 tracking-mono text-[10px] text-foreground">{'GOATCOUNTER_API_TOKEN=…'}</pre>
           Restart the dev server.
+          {code ? (
+            <>
+              {' '}Settings live at{' '}
+              <a href={`https://${code}.goatcounter.com/settings/main`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{code}.goatcounter.com/settings</a>.
+            </>
+          ) : null}
         </li>
       </ol>
     </div>

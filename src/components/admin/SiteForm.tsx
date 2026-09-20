@@ -153,10 +153,14 @@ export function SiteForm({ site }: { site: SiteInfo }) {
           <section className="space-y-5">
             <h2 className="font-display text-lg italic">Analytics</h2>
             <div className="space-y-2">
-              <Label htmlFor="s-ga" className="text-xs uppercase tracking-[0.2em]">Google Analytics 4 — Measurement ID</Label>
-              <Input id="s-ga" value={draft.gaMeasurementId} onChange={(e) => set('gaMeasurementId', e.target.value.trim())} placeholder="G-XXXXXXXXXX" className="tracking-mono text-xs" />
+              <Label htmlFor="s-gc" className="text-xs uppercase tracking-[0.2em]">GoatCounter — site code</Label>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground tracking-mono">
+                <span>https://</span>
+                <Input id="s-gc" value={draft.goatcounterCode} onChange={(e) => set('goatcounterCode', e.target.value.trim().toLowerCase())} placeholder="urbandrone" className="h-8 w-48 tracking-mono text-xs" />
+                <span>.goatcounter.com</span>
+              </div>
               <p className="text-[10px] text-muted-foreground tracking-mono">
-                Analytics → Admin → Data streams → your web stream → Measurement ID. Loaded only after the visitor accepts the consent bar (GDPR). Empty = no analytics, no banner.
+                Free for personal sites, no cookies, no consent bar needed. Sign up at goatcounter.com, pick a code, paste it here, publish. Empty = no analytics.
               </p>
             </div>
           </section>

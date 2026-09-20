@@ -33,7 +33,7 @@ export async function getSite(): Promise<SiteInfo> {
       keywords: row.keywords.split(',').map((k) => k.trim()).filter(Boolean),
       links: parseLinks(row.linksJson),
       about: row.about,
-      gaMeasurementId: row.gaMeasurementId,
+      goatcounterCode: row.goatcounterCode,
     };
   } catch (e) {
     // Fresh clone without a DB yet: fall back to defaults so the build still works
@@ -54,7 +54,7 @@ export async function saveSite(input: Partial<SiteInfo>): Promise<SiteInfo> {
     ...(input.keywords !== undefined ? { keywords: input.keywords.map((k) => k.trim()).filter(Boolean).join(',') } : {}),
     ...(input.links !== undefined ? { linksJson: JSON.stringify(parseLinks(JSON.stringify(input.links))) } : {}),
     ...(input.about !== undefined ? { about: input.about.trim() } : {}),
-    ...(input.gaMeasurementId !== undefined ? { gaMeasurementId: input.gaMeasurementId.trim() } : {}),
+    ...(input.goatcounterCode !== undefined ? { goatcounterCode: input.goatcounterCode.trim() } : {}),
   };
   await db.site.upsert({ where: { id: 'site' }, create: { id: 'site', ...data }, update: data });
   return getSite();

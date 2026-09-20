@@ -22,8 +22,8 @@ export async function PUT(req: NextRequest) {
     if (body.url && !/^https?:\/\//i.test(body.url)) {
       return NextResponse.json({ error: 'Site URL must start with http:// or https://' }, { status: 400 });
     }
-    if (body.gaMeasurementId && !/^G-[A-Z0-9]{4,}$/i.test(body.gaMeasurementId.trim())) {
-      return NextResponse.json({ error: 'Measurement ID looks like G-XXXXXXXXXX' }, { status: 400 });
+    if (body.goatcounterCode && !/^[a-z0-9-]{2,50}$/i.test(body.goatcounterCode.trim())) {
+      return NextResponse.json({ error: 'GoatCounter code is the subdomain part only, e.g. "urbandrone" for urbandrone.goatcounter.com' }, { status: 400 });
     }
     for (const l of body.links ?? []) {
       if (!/^(https?:\/\/|mailto:|\/)/i.test(l.url)) {

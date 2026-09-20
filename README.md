@@ -85,26 +85,19 @@ cp .env.example .env       # then set ADMIN_PASSWORD and AUTH_SECRET
 `/admin` is a dashboard: **Publish** (uncommitted changes → commit + push from the
 browser, which triggers the Pages deploy), **Deploy** (last GitHub Actions run and
 the live URL), **Tezos sync**, content and storage figures against the Pages budget,
-and **Traffic** once Google Analytics is connected. Projects live at `/admin/projects`.
+and **Traffic** once GoatCounter is connected. Projects live at `/admin/projects`.
 
-### Google Analytics 4
+### Analytics — GoatCounter (free, no cookies, no consent bar)
 
-1. Create a GA4 property with a *Web* data stream and paste its **Measurement ID**
-   (`G-…`) into *Site → Analytics*. Publish. Visitors get a **consent bar** — GA is
-   loaded only after they accept (GDPR/CNIL), with IP anonymisation; a *Cookie
-   settings* link in the footer lets them change their mind.
-2. To see the numbers in the dashboard: in Google Cloud enable the **Google
-   Analytics Data API**, create a service account and download its JSON key; in GA →
-   *Admin → Property access management* add the service-account e-mail as *Viewer*;
-   save the key as `ga-credentials.json` (gitignored) and set in `.env`:
-   ```
-   GA_PROPERTY_ID=123456789            # numeric property id, not the G- id
-   GOOGLE_APPLICATION_CREDENTIALS=./ga-credentials.json
-   ```
-   Reports are cached for 10 minutes; *refresh* on the card bypasses the cache.
-
-Prefer no consent bar at all? A cookie-less counter (GoatCounter, Plausible, Umami)
-needs no banner under GDPR; ask and it can replace GA.
+1. Create a free account at goatcounter.com (personal, non-commercial use) and pick a
+   site code; paste it into *Site → Analytics* and publish. The public site loads
+   GoatCounter's counter script — it sets no cookies and stores no personal data, so
+   no consent banner is needed under GDPR.
+2. In GoatCounter → *Settings → API*, create a token with *Read statistics* and set
+   `GOATCOUNTER_API_TOKEN` in `.env`. The dashboard then shows the last 30 days:
+   visitors, per-day chart, **a world map of visitors by country**, top pages,
+   sources, browsers and systems (cached 10 min; *refresh* bypasses the cache).
+   In development, `/admin/?mock=1` previews the card with sample data.
 
 ## Admin account
 
