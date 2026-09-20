@@ -17,6 +17,20 @@ Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
 public gallery and deploys it to Pages. Content is versioned in git:
 `db/custom.db` (projects) and `public/uploads/` (images).
 
+## Site structure
+
+| URL | Content |
+|---|---|
+| `/` | Home: name, tagline, description, selected works (featured or first 6), latest lab entries, about + links |
+| `/artworks/` · `/artworks/<slug>/` | Gallery of artwork projects; detail = uncropped hero, title/description/facts, mosaic, lightbox |
+| `/lab/` · `/lab/<slug>/` | Experiments, research, tools — text-forward list; detail leads with text, media optional |
+
+Every project has a **section** (Artworks / Lab), a **slug** (URL), **tags**, external
+**links** and a **featured** flag, all editable in the project editor. The design
+system (tokens, type roles, components, media rules) is documented in
+[design-system/urbandrone/MASTER.md](design-system/urbandrone/MASTER.md); light and
+dark follow the visitor's system with a manual toggle.
+
 ## Tezos NFTs
 
 Your minted tokens are the primary content. Nothing is re-uploaded: metadata
@@ -25,15 +39,16 @@ comes from the public objkt.com API, media stays on IPFS.
 - Set `TEZOS_WALLETS` in `.env` (comma-separated minting addresses).
 - Admin → **Sync Tezos** fetches new/changed tokens (1–2 API requests; right-click
   the button for a full re-sync), creates/updates one project per **contract you
-  own**, and generates local WebP variants (400/800/1600 px + blur placeholder)
-  in `public/media/` from each token's display image, fetched once from IPFS.
+  own**, and generates local WebP variants (480/960/1600/2400 px + blur placeholder)
+  in `public/media/` from each token's **full-resolution original**, fetched once
+  (objkt CDN first, then IPFS gateways).
   Gateways rate-limit, so the pipeline is paced; anything that fails is retried
   on the next sync.
 - Tokens from **shared contracts** (hic et nunc / Teia, Versum, …) land in the
   **Tezos tokens** tab. Hide the ones you don't want shown; pick the rest into
   hand-curated projects with **Add from Tezos** in the project form.
-- Videos, audio and interactive pieces show their still on the site and stream
-  the original from IPFS (with gateway fallback) when opened. Interactive works
+- Videos, audio and interactive pieces show their still and load on click
+  (poster + play), streaming from objkt's CDN with IPFS gateway fallback. Interactive works
   run in a sandboxed frame on request only.
 - `public/sw.js` caches `/media`, `/_next/static` and IPFS images on the visitor's
   device (cache-first, content-addressed = never stale).

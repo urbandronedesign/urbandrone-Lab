@@ -54,6 +54,8 @@ export type Token = {
 };
 
 export type ProjectSource = 'manual' | 'contract';
+export type ProjectSection = 'artworks' | 'lab';
+export type ProjectLink = { label: string; url: string };
 
 export type Project = {
   id: string;
@@ -63,6 +65,11 @@ export type Project = {
   description: string;
   credits: string;
   source: ProjectSource;
+  section: ProjectSection;
+  slug: string;
+  featured: boolean;
+  tags: string[];
+  links: ProjectLink[];
   contract: string | null;
   coverId: string | null;
   coverTokenId: string | null;

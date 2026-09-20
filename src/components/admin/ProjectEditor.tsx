@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, ExternalLink, Hexagon, Loader2, Star } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Hexagon, Loader2, Plus, Star, Trash2 } from 'lucide-react';
 import { useCreateProject, useProject, useUpdateProject } from '@/lib/queries';
-import type { Media, Project, Token } from '@/lib/types';
+import type { Media, Project, ProjectLink, ProjectSection, Token } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +25,16 @@ type FormState = {
   description: string;
   credits: string;
   published: boolean;
+  section: ProjectSection;
+  slug: string;
+  featured: boolean;
+  tags: string;
+  links: ProjectLink[];
 };
+
+function slugify(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+}
 
 function initialForm(project?: Project | null): FormState {
   return project
@@ -36,8 +45,25 @@ function initialForm(project?: Project | null): FormState {
         description: project.description,
         credits: project.credits,
         published: project.published,
+        section: project.section,
+        slug: project.slug,
+        featured: project.featured,
+        tags: project.tags.join(', '),
+        links: project.links,
       }
-    : { title: '', year: String(new Date().getFullYear()), category: '', description: '', credits: '', published: true };
+    : {
+        title: '',
+        year: String(new Date().getFullYear()),
+        category: '',
+        description: '',
+        credits: '',
+        published: true,
+        section: 'artworks',
+        slug: '',
+        featured: false,
+        tags: '',
+        links: [],
+      };
 }
 
 function initialImages(project?: Project | null): ManagedImage[] {
@@ -140,7 +166,7 @@ function Editor({ project }: { project: Project | null }) {
     const year = parseInt(form.year, 10);
     if (isNaN(year) || year < 1900 || year > 2100) return toast.error('Enter a valid year');
     if (!form.category.trim()) return toast.error('Category is required');
-    if (images.length === 0 && tokens.length === 0) return toast.error('Add at least one image or token');
+    if (form.section === 'artworks' && images.length === 0 && tokens.length === 0) return toast.error('Add at least one image or token');
 
     const payload = {
       title: form.title.trim(),
@@ -149,6 +175,11 @@ function Editor({ project }: { project: Project | null }) {
       description: form.description,
       credits: form.credits,
       published: form.published,
+      section: form.section,
+      slug: form.slug.trim() || slugify(form.title),
+      featured: form.featured,
+      tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      links: form.links.filter((l) => l.label.trim() && l.url.trim()),
       coverTokenId: coverTokenId ?? (coverId ? null : tokens[0]?.id ?? null),
       coverId: coverTokenId ? null : coverId ?? (tokens.length ? null : images[0]?.id ?? null),
       imageIds: images.map((i) => i.id),
@@ -191,7 +222,7 @@ function Editor({ project }: { project: Project | null }) {
             <div className="min-w-0">
               <p className="truncate font-display text-xl italic leading-tight">{form.title || (isEdit ? 'Untitled' : 'New project')}</p>
               <p className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                {locked ? 'contract collection' : isEdit ? 'project' : 'draft'}
+                {form.section === 'lab' ? 'lab' : 'artworks'} · {locked ? 'contract collection' : isEdit ? 'project' : 'draft'}
                 {dirty && <span className="ml-2 text-foreground">· unsaved changes</span>}
               </p>
             </div>
@@ -221,6 +252,29 @@ function Editor({ project }: { project: Project | null }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
+              <Label htmlFor="pe-section" className="text-xs uppercase tracking-[0.2em]">
+                Section
+              </Label>
+              <select
+                id="pe-section"
+                value={form.section}
+                onChange={(e) => set('section', e.target.value as ProjectSection)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="artworks">Artworks</option>
+                <option value="lab">Lab</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex h-9 w-full items-center justify-between rounded-md border border-border px-3 text-sm">
+                <span>Featured on home</span>
+                <Switch checked={form.featured} onCheckedChange={(v) => set('featured', v)} aria-label="Featured" />
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
               <Label htmlFor="pe-year" className="text-xs uppercase tracking-[0.2em]">
                 Year
               </Label>
@@ -231,6 +285,16 @@ function Editor({ project }: { project: Project | null }) {
                 Category
               </Label>
               <Input id="pe-cat" value={form.category} onChange={(e) => set('category', e.target.value)} placeholder="Architecture" className="tracking-mono" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pe-slug" className="text-xs uppercase tracking-[0.2em]">
+              URL
+            </Label>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground tracking-mono">
+              <span className="shrink-0">/{form.section}/</span>
+              <Input id="pe-slug" value={form.slug} onChange={(e) => set('slug', slugify(e.target.value))} placeholder={slugify(form.title) || 'auto from title'} className="h-8 tracking-mono text-xs" />
             </div>
           </div>
 
@@ -256,6 +320,38 @@ function Editor({ project }: { project: Project | null }) {
               Credits
             </Label>
             <Textarea id="pe-credits" value={form.credits} onChange={(e) => set('credits', e.target.value)} rows={3} className="resize-y tracking-mono text-xs" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pe-tags" className="text-xs uppercase tracking-[0.2em]">
+              Tags
+            </Label>
+            <Input id="pe-tags" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="generative, architecture, video" className="tracking-mono text-xs" />
+            <p className="text-[10px] text-muted-foreground tracking-mono">Comma-separated · shown in the facts column and lab list.</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <Label className="text-xs uppercase tracking-[0.2em]">Links</Label>
+              <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => set('links', [...form.links, { label: '', url: '' }])}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add
+              </Button>
+            </div>
+            {form.links.length === 0 ? (
+              <p className="text-[10px] text-muted-foreground tracking-mono">GitHub, paper, demo, press…</p>
+            ) : (
+              <div className="space-y-2">
+                {form.links.map((l, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_2fr_auto] gap-2">
+                    <Input value={l.label} onChange={(e) => set('links', form.links.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} placeholder="GitHub" className="h-8 text-xs" />
+                    <Input value={l.url} onChange={(e) => set('links', form.links.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} placeholder="https://…" className="h-8 tracking-mono text-xs" />
+                    <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-muted-foreground hover:text-destructive" onClick={() => set('links', form.links.filter((_, j) => j !== i))} aria-label="Remove link">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {locked && project?.contract && (

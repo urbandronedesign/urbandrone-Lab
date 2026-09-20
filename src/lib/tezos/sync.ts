@@ -1,11 +1,15 @@
 // Orchestrates a sync: objkt → Token rows → contract projects → local media.
 // Runs in-process (admin API or CLI); progress is kept in memory for polling.
 
+import fs from 'fs/promises';
+import path from 'path';
 import { db } from '@/lib/db';
+import { MEDIA_DIR, MEDIA_WIDTHS } from './config';
 import { fetchCreatedTokens, type ObjktToken } from './objkt';
 import { hasVariants, processImage } from './media';
 import { mediaKeyFor, previewUri } from './paths';
 import { tezosWallets } from './config';
+import { uniqueSlug } from '@/lib/projects';
 
 export { previewUri };
 
@@ -136,6 +140,7 @@ async function syncContractProjects(ownContracts: Map<string, { name: string; de
           category: 'Collection',
           description: meta.description,
           credits: `Minted on Tezos · ${contract}`,
+          slug: await uniqueSlug(meta.name),
           source: 'contract',
           contract,
           order: (max._max.order ?? -1) + 1,
@@ -163,7 +168,7 @@ async function syncContractProjects(ownContracts: Map<string, { name: string; de
   }
 }
 
-async function syncMedia() {
+async function syncMedia(rebuild = false) {
   const tokens = await db.token.findMany({ where: { hidden: false } });
   const todo: { id: string; uri: string; fallback: string | null }[] = [];
   for (const t of tokens) {
@@ -171,9 +176,11 @@ async function syncMedia() {
     if (!uri) continue;
     const key = mediaKeyFor(uri);
     const widths = t.mediaWidths ? t.mediaWidths.split(',').map(Number) : [];
-    if (t.mediaKey && widths.length && (await hasVariants(t.mediaKey, widths))) continue;
-    // Some platforms put a video in display_uri; the thumbnail is then the only still.
-    const fallback = t.thumbnailUri && t.thumbnailUri !== uri ? t.thumbnailUri : null;
+    // Up to date = same source, produced by the current width set, files present
+    const current = widths.length > 0 && widths.every((w) => (MEDIA_WIDTHS as readonly number[]).includes(w));
+    if (!rebuild && t.mediaKey === key && current && (await hasVariants(key, widths))) continue;
+    // Original unreachable/undecodable → fall back to the preview, then the thumbnail.
+    const fallback = [t.displayUri, t.thumbnailUri].find((u) => u && u !== uri) ?? null;
     todo.push({ id: t.id, uri, fallback });
   }
   progress.mediaTotal = todo.length;
@@ -209,10 +216,32 @@ async function syncMedia() {
     }
   };
   await Promise.all(Array.from({ length: MEDIA_CONCURRENCY }, worker));
+  await pruneMedia();
+}
+
+/** Delete variant files no token references any more (e.g. after a pipeline change). */
+async function pruneMedia() {
+  const keys = new Set((await db.token.findMany({ where: { mediaKey: { not: null } }, select: { mediaKey: true } })).map((t) => t.mediaKey!));
+  const dir = path.join(process.cwd(), MEDIA_DIR);
+  let files: string[] = [];
+  try {
+    files = await fs.readdir(dir);
+  } catch {
+    return;
+  }
+  let removed = 0;
+  for (const f of files) {
+    const key = f.split('-')[0];
+    if (!keys.has(key)) {
+      await fs.unlink(path.join(dir, f));
+      removed++;
+    }
+  }
+  if (removed) console.log(`[sync] pruned ${removed} stale media file(s)`);
 }
 
 /** Run a sync. Resolves when finished; poll `getSyncProgress()` meanwhile. */
-export async function runSync(opts: { full?: boolean; media?: boolean } = {}): Promise<SyncProgress> {
+export async function runSync(opts: { full?: boolean; media?: boolean | 'rebuild' } = {}): Promise<SyncProgress> {
   if (progress.running) return progress;
   const wallets = tezosWallets();
   progress = { ...idle(), running: true, phase: 'tokens', startedAt: new Date().toISOString() };
@@ -223,7 +252,7 @@ export async function runSync(opts: { full?: boolean; media?: boolean } = {}): P
     await syncContractProjects(own);
     if (opts.media !== false) {
       progress.phase = 'media';
-      await syncMedia();
+      await syncMedia(opts.media === 'rebuild');
     }
     progress.phase = 'done';
   } catch (e: any) {

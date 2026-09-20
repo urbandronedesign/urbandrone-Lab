@@ -43,6 +43,11 @@ export type ProjectInput = {
   imageIds?: string[];
   tokenIds?: string[];
   order?: number;
+  section?: 'artworks' | 'lab';
+  slug?: string;
+  featured?: boolean;
+  tags?: string[];
+  links?: { label: string; url: string }[];
 };
 
 export function useCreateProject() {

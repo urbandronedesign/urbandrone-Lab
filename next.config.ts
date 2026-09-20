@@ -16,6 +16,10 @@ const isStatic = process.env.STATIC_EXPORT === "1";
 
 const nextConfig: NextConfig = {
   reactStrictMode: false,
+  // /artworks/slug/ → artworks/slug/index.html in the static export;
+  // no redirect so /api/... calls without a slash keep working in the full app.
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
   ...(isStatic
     ? {
         output: "export",

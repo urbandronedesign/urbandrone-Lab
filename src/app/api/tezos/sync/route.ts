@@ -12,7 +12,7 @@ export async function GET() {
 
 /** Start a sync in the background; body: { full?: boolean, media?: boolean }. */
 export async function POST(req: NextRequest) {
-  const body = (await req.json().catch(() => ({}))) as { full?: boolean; media?: boolean };
+  const body = (await req.json().catch(() => ({}))) as { full?: boolean; media?: boolean | 'rebuild' };
   if (getSyncProgress().running) {
     return NextResponse.json({ error: 'A sync is already running' }, { status: 409 });
   }

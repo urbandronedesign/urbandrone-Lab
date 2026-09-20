@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { projectInclude, serializeProject } from '@/lib/serialize';
-import type { ProjectBody } from '../route';
+import { presentationFields, uniqueSlug, type ProjectBody } from '@/lib/projects';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
   try {
     const { id } = await ctx.params;
     const body = (await req.json()) as ProjectBody;
-    const { title, year, category, description, credits, published, coverId, coverTokenId, imageIds, tokenIds, order } = body;
+    const { title, year, category, description, credits, published, coverId, coverTokenId, imageIds, tokenIds, order, slug } = body;
 
     const existing = await db.project.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -53,6 +53,8 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
         ...(credits !== undefined ? { credits } : {}),
         ...(published !== undefined ? { published } : {}),
         ...(order !== undefined ? { order } : {}),
+        ...(slug !== undefined ? { slug: await uniqueSlug(slug.trim() || title || existing.title, id) } : {}),
+        ...presentationFields(body),
         ...(coverId !== undefined ? { coverId: coverId || null } : {}),
         ...(coverTokenId !== undefined ? { coverTokenId: coverTokenId || null } : {}),
         ...(imageIds !== undefined && imageIds.length ? { images: { connect: imageIds.map((i) => ({ id: i })) } } : {}),

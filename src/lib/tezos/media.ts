@@ -13,7 +13,7 @@ import { mediaFile, mediaKeyFor } from './paths';
 export { mediaFile, mediaKeyFor };
 
 const FETCH_TIMEOUT_MS = 45_000;
-const MAX_BYTES = 80 * 1024 * 1024;
+const MAX_BYTES = 200 * 1024 * 1024;
 // Public gateways rate-limit per IP. Space requests out globally and retry
 // 429/5xx with a growing pause before moving on to the next gateway.
 const MIN_SPACING_MS = 700;
@@ -117,7 +117,7 @@ export async function processImage(uri: string, root = process.cwd()): Promise<P
     await base
       .clone()
       .resize({ width: target, withoutEnlargement: true })
-      .webp({ quality: MEDIA_QUALITY, effort: 4 })
+      .webp({ quality: MEDIA_QUALITY, effort: 5 })
       .toFile(path.join(dir, mediaFile(key, w)));
     widths.push(w);
     if (target < w) break;

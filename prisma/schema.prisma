@@ -24,6 +24,12 @@ model Project {
   // (auto-created from a collection contract you own; membership is
   // maintained by the sync, texts and order are yours).
   source       String         @default("manual")
+  // Where it lives on the site: "artworks" (gallery) or "lab" (experiments, research, tools)
+  section      String         @default("artworks")
+  slug         String?        @unique
+  featured     Boolean        @default(false) // shown on the home page
+  tags         String         @default("") // comma-separated
+  linksJson    String         @default("[]") // external links [{ label, url }]
   contract     String?        @unique
   coverTokenId String?
   coverToken   Token?         @relation("ProjectCoverToken", fields: [coverTokenId], references: [id], onDelete: SetNull)
@@ -138,5 +144,6 @@ model Site {
   url         String   @default("")
   keywords    String   @default("") // comma-separated
   linksJson   String   @default("[]") // [{ label, url }]
+  about       String   @default("") // statement shown on the home page (paragraphs)
   updatedAt   DateTime @updatedAt
 }

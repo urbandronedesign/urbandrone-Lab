@@ -1,4 +1,4 @@
-import { IPFS_GATEWAYS } from './config';
+import { IPFS_GATEWAYS, OBJKT_CDN } from './config';
 
 /** `ipfs://<cid>[/path]` → `{ cid, path }`; null for anything that is not IPFS. */
 export function parseIpfs(uri: string | null | undefined): { cid: string; path: string } | null {
@@ -17,9 +17,14 @@ export function ipfsToHttp(uri: string | null | undefined, gateway = 0): string 
   return `${base}${p.cid}${p.path}`;
 }
 
-/** Every gateway URL for a URI, in preference order (for client-side fallback). */
+/**
+ * Every URL a URI can be fetched from, in preference order: objkt's CDN for
+ * bare CIDs (fast, range requests, CORS), then the public gateways.
+ */
 export function ipfsCandidates(uri: string | null | undefined): string[] {
   if (!uri) return [];
-  if (!parseIpfs(uri)) return /^https?:\/\//i.test(uri) ? [uri] : [];
-  return IPFS_GATEWAYS.map((_, i) => ipfsToHttp(uri, i)!);
+  const p = parseIpfs(uri);
+  if (!p) return /^https?:\/\//i.test(uri) ? [uri] : [];
+  const gateways = IPFS_GATEWAYS.map((_, i) => ipfsToHttp(uri, i)!);
+  return p.path ? gateways : [`${OBJKT_CDN}${p.cid}/artifact`, ...gateways];
 }

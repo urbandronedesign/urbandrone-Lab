@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { projectInclude, serializeProject } from '@/lib/serialize';
+import { presentationFields, uniqueSlug, type ProjectBody } from '@/lib/projects';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,24 +16,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ projects: projects.map(serializeProject) });
 }
 
-export type ProjectBody = {
-  title?: string;
-  year?: number;
-  category?: string;
-  description?: string;
-  credits?: string;
-  published?: boolean;
-  coverId?: string | null;
-  coverTokenId?: string | null;
-  imageIds?: string[];
-  tokenIds?: string[];
-  order?: number;
-};
-
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ProjectBody;
-    const { title, year, category, description, credits, published, coverId, coverTokenId, imageIds, tokenIds, order } = body;
+    const { title, year, category, description, credits, published, coverId, coverTokenId, imageIds, tokenIds, order, slug } = body;
 
     if (!title || !year || !category) {
       return NextResponse.json({ error: 'title, year, category are required' }, { status: 400 });
@@ -54,6 +41,8 @@ export async function POST(req: NextRequest) {
         credits: credits ?? '',
         published: published ?? true,
         order: orderValue,
+        slug: await uniqueSlug(slug?.trim() || title),
+        ...presentationFields(body),
         coverId: coverId ?? null,
         coverTokenId: coverTokenId ?? null,
         images: imageIds?.length ? { connect: imageIds.map((id) => ({ id })) } : undefined,

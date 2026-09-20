@@ -12,6 +12,7 @@ export type SiteInfo = {
   url: string;
   keywords: string[];
   links: SiteLink[];
+  about: string;
 };
 
 export const DEFAULT_SITE: SiteInfo = {
@@ -24,4 +25,5 @@ export const DEFAULT_SITE: SiteInfo = {
   url: '',
   keywords: [],
   links: [],
+  about: '',
 };

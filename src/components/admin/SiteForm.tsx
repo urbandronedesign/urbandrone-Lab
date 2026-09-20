@@ -118,6 +118,14 @@ export function SiteForm({ site }: { site: SiteInfo }) {
           </section>
 
           <section className="space-y-5">
+            <h2 className="font-display text-lg italic">About</h2>
+            <div className="space-y-2">
+              <Label htmlFor="s-about" className="text-xs uppercase tracking-[0.2em]">Statement</Label>
+              <Textarea id="s-about" value={draft.about} onChange={(e) => set('about', e.target.value)} rows={8} className="resize-y text-base leading-relaxed" placeholder="Who you are and what you make. Shown in the About section of the home page. Blank lines start new paragraphs." />
+            </div>
+          </section>
+
+          <section className="space-y-5">
             <h2 className="font-display text-lg italic">People &amp; contact</h2>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">

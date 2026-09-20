@@ -35,8 +35,10 @@ export function MediaImage({
       draggable={false}
       className={cn('absolute inset-0 h-full w-full', fit === 'cover' ? 'object-cover' : 'object-contain', className)}
       style={
-        media.placeholder && fit === 'cover'
-          ? { backgroundImage: `url(${media.placeholder})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+        media.placeholder
+          ? fit === 'cover'
+            ? { backgroundImage: `url(${media.placeholder})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : { backgroundImage: `url(${media.placeholder})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundOrigin: 'content-box' }
           : undefined
       }
     />
@@ -50,7 +52,7 @@ export function MediaKindBadge({ media, className }: { media: Media; className?:
   return (
     <span
       className={cn(
-        'pointer-events-none absolute bottom-2 left-2 z-10 bg-black/60 px-1.5 py-0.5 tracking-mono text-[9px] uppercase tracking-[0.2em] text-white',
+        't-label pointer-events-none absolute bottom-2 left-2 z-10 bg-black/60 px-1.5 py-1 text-[10px] text-white',
         className
       )}
     >

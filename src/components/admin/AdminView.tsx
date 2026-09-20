@@ -36,7 +36,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Loader2, LogOut, Hexagon, UserRound, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Footer } from '@/components/gallery/Footer';
 import { useUpdateProject } from '@/lib/queries';
 import type { Project } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -101,6 +100,14 @@ function Row({
           <button type="button" onClick={onEdit} className="truncate text-left hover:underline underline-offset-4">
             {project.title}
           </button>
+          <span className="inline-flex shrink-0 items-center border border-border px-1.5 py-0.5 font-sans tracking-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
+            {project.section}
+          </span>
+          {project.featured && (
+            <span className="inline-flex shrink-0 items-center bg-foreground px-1.5 py-0.5 font-sans tracking-mono text-[8px] uppercase tracking-[0.2em] text-background">
+              featured
+            </span>
+          )}
           {project.source === 'contract' && (
             <span title={project.contract ?? ''} className="inline-flex shrink-0 items-center gap-1 border border-border px-1.5 py-0.5 font-sans tracking-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
               <Hexagon className="h-2.5 w-2.5" /> contract
@@ -147,6 +154,7 @@ export function AdminView() {
 
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
   const [tab, setTab] = useState<'projects' | 'tokens'>('projects');
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'artworks' | 'lab'>('all');
   const sync = useSyncProgress();
   const startSync = useStartSync();
   const progress = sync.data?.progress;
@@ -170,7 +178,8 @@ export function AdminView() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const projects = data?.projects ?? [];
+  const allProjects = data?.projects ?? [];
+  const projects = sectionFilter === 'all' ? allProjects : allProjects.filter((p) => p.section === sectionFilter);
 
   const onDragEnd = async (e: DragEndEvent) => {
     const { active, over } = e;
@@ -277,8 +286,15 @@ export function AdminView() {
               Tezos tokens
             </TabsTrigger>
           </TabsList>
-          <span className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            {tab === 'projects' ? `${projects.length} total · drag rows to reorder` : 'select tokens to hide / show · ★ = your contracts'}
+          <span className="flex items-center gap-3 tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+            {tab === 'projects' && (
+              <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as 'all' | 'artworks' | 'lab')} className="h-7 rounded-md border border-input bg-background px-2 text-[10px] uppercase tracking-[0.2em]">
+                <option value="all">All sections</option>
+                <option value="artworks">Artworks</option>
+                <option value="lab">Lab</option>
+              </select>
+            )}
+            {tab === 'projects' ? `${projects.length} · drag rows to reorder` : 'select tokens to hide / show · ★ = your contracts'}
           </span>
         </div>
 
@@ -346,7 +362,6 @@ export function AdminView() {
         </Tabs>
       </main>
 
-      <Footer projectCount={projects.length} />
 
 
       {/* Delete confirm */}

@@ -7,6 +7,7 @@ import { ipfsCandidates, ipfsToHttp } from './tezos/ipfs';
 import { mediaFile, previewUri } from './tezos/paths';
 import { mediaKind } from './media';
 import type { Media, Project, Token } from './types';
+import { parseLinks } from './site';
 
 export const projectInclude = {
   cover: true,
@@ -116,6 +117,11 @@ export function serializeProject(p: RawProject): Project {
     description: p.description,
     credits: p.credits,
     source: p.source === 'contract' ? 'contract' : 'manual',
+    section: p.section === 'lab' ? 'lab' : 'artworks',
+    slug: p.slug ?? p.id,
+    featured: p.featured,
+    tags: p.tags ? p.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
+    links: parseLinks(p.linksJson),
     contract: p.contract,
     coverId: p.coverId,
     coverTokenId: p.coverTokenId,
