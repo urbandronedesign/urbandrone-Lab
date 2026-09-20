@@ -31,6 +31,7 @@ Theme follows the system (`color-scheme: light dark`) with a manual toggle.
 | Display | `.t-display` | clamp(2.5rem, 7vw, 7rem) | 300 | -0.03em, lh 0.95 |
 | H1 | `.t-h1` | clamp(1.75rem, 3vw, 2.75rem) | 300 | -0.02em, lh 1.1 |
 | H2 | `.t-h2` | 1.375rem / 1.75rem | 400 | -0.01em |
+| Section | `.t-section` | clamp(1.375rem, 1.8vw, 1.75rem) | 400 | -0.015em — every section heading (Selected works, Lab, CV groups, Works) |
 | Body | default | 1rem (16px) / 1.0625rem ≥1024 | 400 | 0, lh 1.6 |
 | Lead | `.t-lead` | 1.125rem–1.25rem | 300 | lh 1.5 |
 | Label | `.t-label` | 0.6875rem (11px) | 500 | 0.14em, uppercase, mono |

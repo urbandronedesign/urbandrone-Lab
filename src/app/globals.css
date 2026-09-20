@@ -156,6 +156,13 @@
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
+  /* section heading: "Selected works", "Lab", CV groups, "Works" — one size everywhere */
+  .t-section {
+    font-weight: 400;
+    font-size: clamp(1.375rem, 1.8vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
   .t-lead {
     font-weight: 300;
     font-size: clamp(1.125rem, 1.4vw, 1.375rem);

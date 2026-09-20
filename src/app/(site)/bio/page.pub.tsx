@@ -64,7 +64,7 @@ export default async function BioPage() {
         <section className="gutter mx-auto w-full max-w-[1600px] border-t border-border pb-16 md:pb-24" aria-label="Curriculum vitae">
           {groups.map(({ group, entries }) => (
             <div key={group} className="grid gap-4 border-b border-border py-8 md:grid-cols-12 md:gap-10 md:py-10">
-              <h2 className="t-label text-muted-foreground md:col-span-3">{group}</h2>
+              <h2 className="t-section md:col-span-3">{group}</h2>
               <ul className="md:col-span-9 xl:col-span-7">
                 {entries.map((e, i) => (
                   <li key={i} className="grid grid-cols-[4rem_minmax(0,1fr)] gap-4 py-2 md:grid-cols-[6rem_minmax(0,1fr)]">

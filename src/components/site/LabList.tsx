@@ -14,8 +14,8 @@ export function LabGroups({ projects }: { projects: Project[] }) {
     <div className="space-y-14 md:space-y-20">
       {groups.map((g) => (
         <section key={g.category} aria-labelledby={`lab-${g.category.replace(/\W+/g, '-').toLowerCase()}`}>
-          <div className="mb-2 flex items-baseline justify-between">
-            <h2 id={`lab-${g.category.replace(/\W+/g, '-').toLowerCase()}`} className="t-label text-muted-foreground">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 id={`lab-${g.category.replace(/\W+/g, '-').toLowerCase()}`} className="t-section">
               {g.category}
             </h2>
             <span className="t-label text-muted-foreground">{String(g.items.length).padStart(2, '0')}</span>

@@ -32,8 +32,8 @@ export default async function HomePage() {
       {/* Selected works */}
       {featured.length > 0 && (
         <section className="gutter mx-auto w-full max-w-[1600px] pb-16 md:pb-24" aria-labelledby="selected">
-          <div className="mb-6 flex items-baseline justify-between border-t border-border pt-6">
-            <h2 id="selected" className="t-label text-muted-foreground">Selected works</h2>
+          <div className="mb-8 flex items-baseline justify-between border-t border-border pt-8">
+            <h2 id="selected" className="t-section">Selected works</h2>
             <Link href="/artworks/" className="t-label cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
               All artworks · {artworks.length}
             </Link>
@@ -45,8 +45,8 @@ export default async function HomePage() {
       {/* Collabs */}
       {collabs.length > 0 && (
         <section className="gutter mx-auto w-full max-w-[1600px] pb-16 md:pb-24" aria-labelledby="collabs">
-          <div className="mb-6 flex items-baseline justify-between border-t border-border pt-6">
-            <h2 id="collabs" className="t-label text-muted-foreground">Collabs</h2>
+          <div className="mb-8 flex items-baseline justify-between border-t border-border pt-8">
+            <h2 id="collabs" className="t-section">Collabs</h2>
             <Link href="/collabs/" className="t-label cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
               All collabs · {collabs.length}
             </Link>
@@ -58,8 +58,8 @@ export default async function HomePage() {
       {/* Lab */}
       {lab.length > 0 && (
         <section className="gutter mx-auto w-full max-w-[1600px] pb-16 md:pb-24" aria-labelledby="lab">
-          <div className="mb-2 flex items-baseline justify-between pt-6">
-            <h2 id="lab" className="t-label text-muted-foreground">Lab</h2>
+          <div className="mb-4 flex items-baseline justify-between border-t border-border pt-8">
+            <h2 id="lab" className="t-section">Lab</h2>
             <Link href="/lab/" className="t-label cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
               All entries · {lab.length}
             </Link>
@@ -71,7 +71,7 @@ export default async function HomePage() {
       {/* About */}
       {(site.about || site.email || site.links.length > 0) && (
         <section id="about" className="gutter mx-auto grid w-full max-w-[1600px] gap-10 border-t border-border py-16 md:grid-cols-12 md:py-24" aria-labelledby="about-title">
-          <h2 id="about-title" className="t-label text-muted-foreground md:col-span-3">About</h2>
+          <h2 id="about-title" className="t-section md:col-span-3">About</h2>
           <div className="md:col-span-7">
             {site.about ? <Prose text={site.about} className="t-lead max-w-[60ch]" /> : <p className="t-lead text-muted-foreground">{site.description}</p>}
             <Link href="/bio/" className="t-label mt-8 inline-flex cursor-pointer items-center gap-2 py-2 transition-colors hover:text-muted-foreground">

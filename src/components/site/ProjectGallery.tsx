@@ -48,7 +48,7 @@ export function ProjectGallery({ project, children }: { project: Project; childr
       {rest.length > 0 && (
         <section className="gutter mx-auto w-full max-w-[1600px] pb-16 md:pb-24">
           <div className="mb-6 flex items-baseline justify-between">
-            <h2 className="t-label text-muted-foreground">Works</h2>
+            <h2 className="t-section">Works</h2>
             <span className="t-label text-muted-foreground">{String(media.length).padStart(2, '0')}</span>
           </div>
           <ul className="grid grid-cols-2 gap-1 md:grid-cols-2 xl:grid-cols-3">
