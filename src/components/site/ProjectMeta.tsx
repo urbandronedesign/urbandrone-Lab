@@ -1,4 +1,5 @@
-import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 import type { Project } from '@/lib/types';
 import { Prose } from './Prose';
 import { Downloads } from './Downloads';
@@ -17,6 +18,7 @@ export function ProjectMeta({ project, downloads = [] }: { project: Project; dow
   const editions = tokens.reduce((n, t) => n + (t.supply || 0), 0);
   const collectionUrl = project.contract && first?.collectionPath ? `https://objkt.com/collections/${first.collectionPath}` : null;
   const resolved = new Set(downloads.map((d) => `${d.owner}/${d.repo}`.toLowerCase()));
+  // a releases link (any prefix) is shown as a Download block instead of a plain link
   const plainLinks = project.links.filter((l) => {
     const p = parseReleasesUrl(l.url);
     return !(p && resolved.has(`${p.owner}/${p.repo}`.toLowerCase()));
@@ -73,9 +75,20 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function LinkRow({ href, label }: { href: string; label: string }) {
+  const cls = 't-caption inline-flex cursor-pointer items-center gap-1.5 underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground';
+  // Site-internal links (e.g. a related lab entry) navigate in place
+  if (href.startsWith('/')) {
+    return (
+      <li>
+        <Link href={href} className={cls}>
+          {label} <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+        </Link>
+      </li>
+    );
+  }
   return (
     <li>
-      <a href={href} target="_blank" rel="noopener noreferrer" className="t-caption inline-flex cursor-pointer items-center gap-1.5 underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground">
+      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
         {label} <ExternalLink className="h-3 w-3" strokeWidth={1.5} />
       </a>
     </li>

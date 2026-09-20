@@ -13,7 +13,7 @@ export function Downloads({ releases }: { releases: ReleaseInfo[] }) {
               Download
             </h3>
             <span className="t-label text-muted-foreground">
-              {r.tag} · {new Date(r.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {r.version} · {new Date(r.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           </div>
           {r.assets.length > 0 ? (

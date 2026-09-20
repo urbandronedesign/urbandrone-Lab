@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Site URL must start with http:// or https://' }, { status: 400 });
     }
     for (const l of body.links ?? []) {
-      if (!/^(https?:\/\/|mailto:)/i.test(l.url)) {
+      if (!/^(https?:\/\/|mailto:|\/)/i.test(l.url)) {
         return NextResponse.json({ error: `Link "${l.label}" needs a full URL (https://… or mailto:…)` }, { status: 400 });
       }
     }
