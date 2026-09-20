@@ -7,11 +7,14 @@ The **admin runs only on your machine**; it is never deployed.
 
 ## Everyday workflow
 
-```sh
-npm run dev:https          # full app at https://localhost:3000  (admin: /admin)
-# … add / edit projects and upload images in the admin …
-git add -A && git commit -m "Add project X" && git push
-```
+A local launcher (`admin.cmd` → `scripts/admin.js`, kept out of git) starts the
+server and opens https://localhost:3000/admin; the terminal window that appears is
+the server — keep it open while you work, Ctrl-C (or closing it) stops it.
+Without it: `npm run dev:https` and open the URL yourself.
+
+Edit projects, site info and bio in the admin, then click **Publish** on the
+dashboard — that commits and pushes, and the site is live about a minute later.
+(Equivalent by hand: `npm run dev:https`, then `git add -A && git commit && git push`.)
 
 Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
 public gallery and deploys it to Pages. Content is versioned in git:

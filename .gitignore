@@ -57,3 +57,7 @@ server.log
 *.pid
 
 certificates
+
+# local admin launcher (not part of the site)
+admin.cmd
+scripts/admin.js
