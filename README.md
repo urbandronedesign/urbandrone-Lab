@@ -5,6 +5,9 @@ Minimal, fullscreen-image portfolio. Next.js 16, Tailwind 4, shadcn/ui, Prisma +
 The site is published as **static HTML on GitHub Pages** (https://urbandrone.xyz).
 The **admin runs only on your machine**; it is never deployed.
 
+Full reference (architecture, data model, Tezos pipeline, security, gotchas):
+[docs/HANDBOOK.md](docs/HANDBOOK.md).
+
 ## Everyday workflow
 
 A local launcher (`admin.cmd` → `scripts/admin.js`, kept out of git) starts the
