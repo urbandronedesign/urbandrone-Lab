@@ -42,23 +42,11 @@ cp .env.example .env       # then set ADMIN_PASSWORD and AUTH_SECRET
 - `ADMIN_USER`, `ADMIN_PASSWORD` — admin sign-in at `/admin`
 - `AUTH_SECRET` — 32+ random chars; signs the admin session cookie
 
-## One-time GitHub Pages + domain setup
+## Domain / GitHub Pages
 
-1. Push this repo to GitHub.
-2. Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Repo **Settings → Pages → Custom domain**: `urbandrone.xyz` (matches `public/CNAME`).
-   Tick **Enforce HTTPS** once the certificate is issued (a few minutes after DNS resolves).
-4. At your DNS provider, for `urbandrone.xyz`:
-
-   | Type | Name | Value |
-   |---|---|---|
-   | A | `@` | `185.199.108.153` |
-   | A | `@` | `185.199.109.153` |
-   | A | `@` | `185.199.110.153` |
-   | A | `@` | `185.199.111.153` |
-   | CNAME | `www` | `<github-username>.github.io` |
-
-   Current IPs: https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site
+Repo: https://github.com/urbandronedesign/urbandrone-Lab — Pages source is GitHub
+Actions, custom domain `urbandrone.xyz`. The DNS move from Netlify to OVH and the
+HTTPS steps are written up in [docs/DOMAIN-SETUP.md](docs/DOMAIN-SETUP.md).
 
 ## How the two modes work
 
