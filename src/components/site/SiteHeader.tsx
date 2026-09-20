@@ -25,11 +25,18 @@ export function SiteHeader() {
   const pathname = usePathname() ?? '/';
   const [open, setOpen] = useState(false);
 
-  // Lock scroll while the menu is open (links below close it on click)
+  // Close on Escape or on a click outside the menu
   useEffect(() => {
-    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target as Element).closest('#mobile-menu, [aria-controls="mobile-menu"]')) setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onClick);
     return () => {
-      document.documentElement.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onClick);
     };
   }, [open]);
 
@@ -73,29 +80,32 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* Full-screen menu (mobile) */}
-      <div
-        id="mobile-menu"
-        className={cn(
-          'fixed inset-x-0 top-14 bottom-0 z-40 flex flex-col bg-background transition-opacity duration-200 md:hidden',
-          open ? 'opacity-100' : 'pointer-events-none opacity-0'
-        )}
-        aria-hidden={!open}
-      >
-        <nav aria-label="Primary mobile" className="gutter flex flex-1 flex-col justify-center gap-2">
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              onClick={() => setOpen(false)}
-              className={cn('t-h1 cursor-pointer py-3', isActive(pathname, n.href) ? 'text-foreground' : 'text-muted-foreground')}
-            >
-              {n.label}
-            </Link>
-          ))}
+      {/* Dropdown menu (mobile): anchored under the menu button */}
+      {open && (
+        <nav
+          id="mobile-menu"
+          aria-label="Primary mobile"
+          className="gutter absolute right-0 top-full z-40 md:hidden"
+        >
+          <ul className="mt-2 min-w-[11rem] border border-border bg-background py-1 shadow-lg">
+            {NAV.map((n) => (
+              <li key={n.href}>
+                <Link
+                  href={n.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(pathname, n.href) ? 'page' : undefined}
+                  className={cn(
+                    't-label block cursor-pointer px-4 py-3 transition-colors hover:bg-muted hover:text-foreground',
+                    isActive(pathname, n.href) ? 'text-foreground' : 'text-muted-foreground'
+                  )}
+                >
+                  {n.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <div className="gutter pb-10 t-label text-muted-foreground">{site.tagline}</div>
-      </div>
+      )}
     </header>
   );
 }
