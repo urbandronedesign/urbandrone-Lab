@@ -42,6 +42,7 @@ function OriginalImage({ media }: { media: Media }) {
   return (
     <img
       src={gw.src}
+      crossOrigin="anonymous"
       onError={gw.onError}
       alt={media.alt}
       decoding="async"
@@ -60,6 +61,7 @@ function Video({ media }: { media: Media }) {
     <video
       key={gw.src}
       src={gw.src}
+      crossOrigin="anonymous"
       onError={gw.onError}
       poster={media.url}
       controls
@@ -80,7 +82,7 @@ function Audio({ media }: { media: Media }) {
     <div className="absolute inset-0">
       <MediaImage media={media} sizes="100vw" fit="contain" />
       {gw.src && !gw.exhausted ? (
-        <audio key={gw.src} src={gw.src} onError={gw.onError} controls autoPlay preload="none" className="absolute bottom-6 left-1/2 w-[min(90%,480px)] -translate-x-1/2" />
+        <audio key={gw.src} src={gw.src} crossOrigin="anonymous" onError={gw.onError} controls autoPlay preload="none" className="absolute bottom-6 left-1/2 w-[min(90%,480px)] -translate-x-1/2" />
       ) : (
         <UnavailableNote />
       )}
