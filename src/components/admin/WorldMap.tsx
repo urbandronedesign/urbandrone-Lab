@@ -56,14 +56,15 @@ export function WorldMap({ rows }: { rows: Row[] }) {
     <div className="relative">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Visitors by country" className="block h-auto w-full">
         <g onMouseLeave={() => setHover(null)}>
-          {features.map((f) => {
-            const row = byNumeric.get(String(Number(f.id)));
+          {features.map((f, i) => {
+            // a few territories in the atlas carry no ISO id → fall back to the index
+            const row = f.id != null ? byNumeric.get(String(Number(f.id))) : undefined;
             const d = path(f) ?? '';
             const op = row ? opacityFor(row.visitors) : 0;
             const name = row?.name ?? (f.properties as { name?: string })?.name ?? '';
             return (
               <path
-                key={String(f.id)}
+                key={f.id != null ? String(f.id) : `f${i}`}
                 d={d}
                 fill={op ? 'var(--foreground)' : 'var(--muted)'}
                 fillOpacity={op || 1}
