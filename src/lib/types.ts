@@ -50,6 +50,7 @@ export type Token = {
   thumb: string | null;
   placeholder: string | null;
   objktUrl: string;
+  media: Media;
 };
 
 export type ProjectSource = 'manual' | 'contract';

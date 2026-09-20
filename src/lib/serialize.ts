@@ -95,6 +95,7 @@ export function serializeToken(t: TokenRow): Token {
     thumb: thumbW && t.mediaKey ? `${MEDIA_URL_PREFIX}/${mediaFile(t.mediaKey, thumbW)}` : ipfsToHttp(previewUri(t)),
     placeholder: t.placeholder,
     objktUrl: objktUrl(t),
+    media: tokenToMedia(t),
   };
 }
 

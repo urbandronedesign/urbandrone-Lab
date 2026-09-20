@@ -8,7 +8,6 @@ import { TokenPool } from './TokenPool';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { ProjectForm } from './ProjectForm';
 import {
   Dialog,
   DialogContent,
@@ -83,7 +82,7 @@ function Row({
         <GripVertical className="h-4 w-4" />
       </button>
 
-      <div className="relative aspect-[4/3] w-16 overflow-hidden bg-muted">
+      <button type="button" onClick={onEdit} className="relative aspect-[4/3] w-16 overflow-hidden bg-muted" aria-label="Edit project">
         {cover && (
           <img
             src={cover.url}
@@ -93,11 +92,13 @@ function Row({
             style={cover.placeholder ? { backgroundImage: `url(${cover.placeholder})`, backgroundSize: 'cover' } : undefined}
           />
         )}
-      </div>
+      </button>
 
       <div className="min-w-0">
         <p className="flex items-center gap-2 truncate font-display text-base leading-tight">
-          {project.title}
+          <button type="button" onClick={onEdit} className="truncate text-left hover:underline underline-offset-4">
+            {project.title}
+          </button>
           {project.source === 'contract' && (
             <span title={project.contract ?? ''} className="inline-flex shrink-0 items-center gap-1 border border-border px-1.5 py-0.5 font-sans tracking-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
               <Hexagon className="h-2.5 w-2.5" /> contract
@@ -142,8 +143,6 @@ export function AdminView() {
   const seed = useSeedProjects();
   const update = useUpdateProject();
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
   const [confirmSeed, setConfirmSeed] = useState(false);
   const [tab, setTab] = useState<'projects' | 'tokens'>('projects');
@@ -171,7 +170,6 @@ export function AdminView() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const projects = data?.projects ?? [];
-  const editing = editingId ? projects.find((p) => p.id === editingId) ?? null : null;
 
   const onDragEnd = async (e: DragEndEvent) => {
     const { active, over } = e;
@@ -258,9 +256,11 @@ export function AdminView() {
                 <LogOut className="mr-2 h-3.5 w-3.5" />
                 Sign out
               </Button>
-              <Button size="sm" onClick={() => { setEditingId(null); setFormOpen(true); }}>
-                <Plus className="mr-2 h-3.5 w-3.5" />
-                New project
+              <Button size="sm" asChild>
+                <Link href="/admin/projects/new">
+                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  New project
+                </Link>
               </Button>
             </div>
           </div>
@@ -307,9 +307,11 @@ export function AdminView() {
         ) : projects.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center gap-3 text-center">
             <p className="font-display text-2xl italic text-muted-foreground">Empty studio.</p>
-            <Button size="sm" onClick={() => { setEditingId(null); setFormOpen(true); }}>
-              <Plus className="mr-2 h-3.5 w-3.5" />
-              Create your first project
+            <Button size="sm" asChild>
+              <Link href="/admin/projects/new">
+                <Plus className="mr-2 h-3.5 w-3.5" />
+                Create your first project
+              </Link>
             </Button>
           </div>
         ) : (
@@ -331,7 +333,7 @@ export function AdminView() {
                     key={p.id}
                     project={p}
                     index={i}
-                    onEdit={() => { setEditingId(p.id); setFormOpen(true); }}
+                    onEdit={() => router.push(`/admin/projects/${p.id}`)}
                     onDelete={() => setConfirmDel(p)}
                     onTogglePublish={(pub) => onTogglePublish(p, pub)}
                   />
@@ -341,37 +343,12 @@ export function AdminView() {
           </DndContext>
         )}
 
-        {/* Hint card */}
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {[
-            { t: '1. Compose', d: 'Click a project cell or use New Project. Fill title, year, category, two-paragraph description.' },
-            { t: '2. Curate images', d: 'Drag images to upload, reorder by drag handle, tap the star to set the cover.' },
-            { t: '3. Publish', d: 'Toggle the live switch. Drag rows to reorder the gallery index. Done.' },
-          ].map((c) => (
-            <div key={c.t} className="rounded-md border border-border bg-muted/20 p-4">
-              <p className="font-display text-base italic">{c.t}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{c.d}</p>
-            </div>
-          ))}
-        </div>
         </TabsContent>
         </Tabs>
       </main>
 
       <Footer projectCount={projects.length} />
 
-      {/* Project form dialog */}
-      <ProjectForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        project={editing}
-        onSaved={(id) => {
-          setFormOpen(false);
-          setEditingId(null);
-          // optionally open it in the gallery
-          void id;
-        }}
-      />
 
       {/* Delete confirm */}
       <Dialog open={!!confirmDel} onOpenChange={(o) => !o && setConfirmDel(null)}>

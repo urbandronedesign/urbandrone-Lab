@@ -35,14 +35,18 @@ function SortableImage({
   image,
   index,
   isCover,
+  highlighted,
   onSetCover,
   onDelete,
+  onSelect,
 }: {
   image: ManagedImage;
   index: number;
   isCover: boolean;
+  highlighted?: boolean;
   onSetCover: () => void;
   onDelete: () => void;
+  onSelect?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: image.id,
@@ -60,9 +64,11 @@ function SortableImage({
       className={cn(
         'group relative aspect-[4/3] w-full overflow-hidden border bg-muted',
         isCover ? 'border-foreground' : 'border-border',
+        highlighted && 'outline outline-2 outline-offset-2 outline-foreground',
         isDragging && 'opacity-70 shadow-lg'
       )}
     >
+      {onSelect && <button type="button" onClick={onSelect} aria-label="Preview" className="absolute inset-0 z-[5]" />}
       <Image
         src={image.url}
         alt={image.alt ?? ''}
@@ -118,11 +124,15 @@ export function ImageManager({
   onChange,
   coverId,
   onCoverChange,
+  selectedId = null,
+  onSelect,
 }: {
   images: ManagedImage[];
   onChange: (imgs: ManagedImage[]) => void;
   coverId: string | null;
   onCoverChange: (id: string | null) => void;
+  selectedId?: string | null;
+  onSelect?: (img: ManagedImage) => void;
 }) {
   const upload = useUploadImage();
   const [dragOver, setDragOver] = useState(false);
@@ -245,15 +255,17 @@ export function ImageManager({
       {images.length > 0 ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={images.map((i) => i.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8">
               {images.map((im, i) => (
                 <SortableImage
                   key={im.id}
                   image={im}
                   index={i}
                   isCover={coverId === im.id}
+                  highlighted={selectedId === im.id}
                   onSetCover={() => onCoverChange(im.id)}
                   onDelete={() => deleteImage(im.id)}
+                  onSelect={onSelect ? () => onSelect(im) : undefined}
                 />
               ))}
             </div>

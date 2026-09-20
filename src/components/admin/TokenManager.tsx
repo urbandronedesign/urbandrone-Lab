@@ -16,21 +16,25 @@ function SortableToken({
   token,
   index,
   isCover,
+  highlighted,
   locked,
   onSetCover,
   onRemove,
+  onSelect,
 }: {
   token: Token;
   index: number;
   isCover: boolean;
+  highlighted: boolean;
   locked: boolean;
   onSetCover: () => void;
   onRemove: () => void;
+  onSelect?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: token.id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : 1 }} className={cn(isDragging && 'opacity-70')}>
-      <TokenTile token={token} selected={isCover}>
+      <TokenTile token={token} selected={isCover} highlighted={highlighted} onToggle={onSelect}>
         <span className="absolute left-1.5 top-1.5 z-20 bg-black/60 px-1.5 py-0.5 tracking-mono text-[9px] uppercase tracking-[0.2em] text-white">
           {String(index + 1).padStart(2, '0')}
         </span>
@@ -79,12 +83,16 @@ export function TokenManager({
   coverTokenId,
   onCoverChange,
   locked = false,
+  selectedId = null,
+  onSelect,
 }: {
   tokens: Token[];
   onChange: (t: Token[]) => void;
   coverTokenId: string | null;
   onCoverChange: (id: string | null) => void;
   locked?: boolean;
+  selectedId?: string | null;
+  onSelect?: (token: Token) => void;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -118,14 +126,16 @@ export function TokenManager({
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={tokens.map((t) => t.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8">
               {tokens.map((t, i) => (
                 <SortableToken
                   key={t.id}
                   token={t}
                   index={i}
                   isCover={coverTokenId === t.id}
+                  highlighted={selectedId === t.id}
                   locked={locked}
+                  onSelect={onSelect ? () => onSelect(t) : undefined}
                   onSetCover={() => onCoverChange(coverTokenId === t.id ? null : t.id)}
                   onRemove={() => {
                     onChange(tokens.filter((x) => x.id !== t.id));

@@ -20,12 +20,14 @@ const KIND_LABEL: Record<Token['kind'], string> = {
 export function TokenTile({
   token,
   selected,
+  highlighted,
   onToggle,
   dimmed,
   children,
 }: {
   token: Token;
   selected?: boolean;
+  highlighted?: boolean;
   onToggle?: () => void;
   dimmed?: boolean;
   children?: React.ReactNode;
@@ -35,6 +37,7 @@ export function TokenTile({
       className={cn(
         'group relative aspect-square overflow-hidden border bg-muted text-left',
         selected ? 'border-foreground ring-1 ring-foreground' : 'border-border',
+        highlighted && 'outline outline-2 outline-offset-2 outline-foreground',
         dimmed && 'opacity-40'
       )}
     >
