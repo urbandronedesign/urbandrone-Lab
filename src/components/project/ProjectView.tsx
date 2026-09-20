@@ -1,9 +1,10 @@
 'use client';
 
 import { useGalleryStore } from '@/lib/store';
-import type { Project } from '@/lib/types';
+import type { Media, Project } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import { MediaImage, MediaKindBadge } from '@/components/media/MediaImage';
+import { MediaLinks, MediaPlayer } from '@/components/media/MediaPlayer';
 import { ChevronLeft, ChevronRight, X, ArrowLeft } from 'lucide-react';
 import { useEffect, useCallback, useState } from 'react';
 import { Footer } from '@/components/gallery/Footer';
@@ -16,7 +17,7 @@ function ImageViewer({
   onChange,
   onClose,
 }: {
-  images: { id: string; url: string; width: number | null; height: number | null; alt: string }[];
+  images: Media[];
   index: number;
   onChange: (i: number) => void;
   onClose: () => void;
@@ -83,16 +84,15 @@ function ImageViewer({
             transition={{ duration: 0.5, ease }}
             className="relative h-full w-full"
           >
-            <Image
-              src={current.url}
-              alt={current.alt}
-              fill
-              sizes="100vw"
-              className="object-contain"
-              priority
-            />
+            <MediaPlayer media={current} />
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Caption + links */}
+      <div className="pointer-events-none absolute bottom-4 left-4 right-4 z-10 flex items-end justify-between gap-4 text-white/70">
+        <span className="truncate font-display text-lg italic">{current.title}</span>
+        <MediaLinks media={current} className="pointer-events-auto flex shrink-0 gap-4 tracking-mono text-[10px] uppercase tracking-[0.25em]" />
       </div>
 
       {/* Prev / Next */}
@@ -125,7 +125,7 @@ function Thumbnails({
   index,
   onSelect,
 }: {
-  images: { id: string; url: string; alt: string }[];
+  images: Media[];
   index: number;
   onSelect: (i: number) => void;
 }) {
@@ -144,13 +144,8 @@ function Thumbnails({
           }
           aria-label={`View image ${i + 1}`}
         >
-          <Image
-            src={im.url}
-            alt={im.alt}
-            fill
-            sizes="96px"
-            className="object-cover"
-          />
+          <MediaImage media={im} sizes="96px" />
+          <MediaKindBadge media={im} className="bottom-1 left-1 px-1 text-[7px]" />
         </button>
       ))}
     </div>
@@ -181,7 +176,7 @@ export function ProjectView({ id, allProjects }: { id: string; allProjects: Proj
     );
   }
 
-  const images = project.images;
+  const images = project.media;
   const currentIdx = Math.max(0, Math.min(lightboxIndex, images.length - 1));
   const current = images[currentIdx] ?? project.cover;
 
@@ -227,14 +222,13 @@ export function ProjectView({ id, allProjects }: { id: string; allProjects: Proj
               className="group relative block h-full w-full"
               aria-label="Open fullscreen"
             >
-              <Image
-                src={current.url}
-                alt={current.alt || project.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 100vw"
-                className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
+              <MediaImage
+                media={current}
                 priority
+                sizes="100vw"
+                className="transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
               />
+              <MediaKindBadge media={current} className="bottom-4 left-4" />
               <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
               <div className="pointer-events-none absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-black opacity-0 transition group-hover:opacity-100">
                 <span className="tracking-mono text-[10px]">↗</span>

@@ -17,6 +17,28 @@ Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
 public gallery and deploys it to Pages. Content is versioned in git:
 `db/custom.db` (projects) and `public/uploads/` (images).
 
+## Tezos NFTs
+
+Your minted tokens are the primary content. Nothing is re-uploaded: metadata
+comes from the public objkt.com API, media stays on IPFS.
+
+- Set `TEZOS_WALLETS` in `.env` (comma-separated minting addresses).
+- Admin → **Sync Tezos** fetches new/changed tokens (1–2 API requests; right-click
+  the button for a full re-sync), creates/updates one project per **contract you
+  own**, and generates local WebP variants (400/800/1600 px + blur placeholder)
+  in `public/media/` from each token's display image, fetched once from IPFS.
+  Gateways rate-limit, so the pipeline is paced; anything that fails is retried
+  on the next sync.
+- Tokens from **shared contracts** (hic et nunc / Teia, Versum, …) land in the
+  **Tezos tokens** tab. Hide the ones you don't want shown; pick the rest into
+  hand-curated projects with **Add from Tezos** in the project form.
+- Videos, audio and interactive pieces show their still on the site and stream
+  the original from IPFS (with gateway fallback) when opened. Interactive works
+  run in a sandboxed frame on request only.
+- `public/sw.js` caches `/media`, `/_next/static` and IPFS images on the visitor's
+  device (cache-first, content-addressed = never stale).
+- Commit `db/custom.db` + `public/media/` after syncing — that is what gets deployed.
+
 ## Scripts
 
 | Script | What it does |
@@ -38,6 +60,7 @@ cp .env.example .env       # then set ADMIN_PASSWORD and AUTH_SECRET
 
 `.env` keys:
 
+- `TEZOS_WALLETS` — minting wallets to sync, comma-separated
 - `DATABASE_URL` — `file:../db/custom.db` (relative to `prisma/`)
 - `ADMIN_USER`, `ADMIN_PASSWORD` — admin sign-in at `/admin`
 - `AUTH_SECRET` — 32+ random chars; signs the admin session cookie

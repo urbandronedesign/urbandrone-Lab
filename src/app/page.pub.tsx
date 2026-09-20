@@ -1,51 +1,20 @@
 import { db } from '@/lib/db';
-import type { Prisma } from '@prisma/client';
 import { Gallery } from '@/components/gallery/Gallery';
+import { projectInclude, serializeProject } from '@/lib/serialize';
 import type { Project } from '@/lib/types';
 
-type RawProject = Prisma.ProjectGetPayload<{ include: { cover: true; images: true } }>;
-
-function serialize(p: RawProject): Project {
-  return {
-    id: p.id,
-    title: p.title,
-    year: p.year,
-    category: p.category,
-    description: p.description,
-    credits: p.credits,
-    coverId: p.coverId,
-    cover: p.cover
-      ? {
-          id: p.cover.id,
-          url: p.cover.url,
-          width: p.cover.width,
-          height: p.cover.height,
-          alt: p.cover.alt,
-        }
-      : null,
-    images: p.images.map((im) => ({
-      id: im.id,
-      url: im.url,
-      width: im.width,
-      height: im.height,
-      alt: im.alt,
-    })),
-    order: p.order,
-    published: p.published,
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  };
-}
-
+// Rendered per request in dev; once, at build time, for the static export —
+// which is when the published projects (and their Tezos tokens) get embedded.
 export default async function Home() {
   let projects: Project[] = [];
   try {
     const raw = await db.project.findMany({
       where: { published: true },
       orderBy: { order: 'asc' },
-      include: { cover: true, images: { orderBy: { createdAt: 'asc' } } },
+      include: projectInclude,
     });
-    projects = raw.map(serialize);
+    // Skip projects with nothing to show (e.g. all tokens hidden)
+    projects = raw.map(serializeProject).filter((p) => p.media.length > 0);
   } catch (e) {
     // Database may not be ready yet (fresh clone). The client will show
     // a friendly empty state pointing to the admin.

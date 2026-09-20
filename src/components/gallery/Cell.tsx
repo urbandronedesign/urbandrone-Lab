@@ -3,13 +3,13 @@
 import { useGalleryStore } from '@/lib/store';
 import type { Project } from '@/lib/types';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { MediaImage, MediaKindBadge } from '@/components/media/MediaImage';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function Cell({ project, index }: { project: Project; index: number }) {
   const openProject = useGalleryStore((s) => s.openProject);
-  const cover = project.cover ?? project.images[0];
+  const cover = project.cover ?? project.media[0];
   if (!cover) return null;
 
   const label = String(index + 1).padStart(2, '0');
@@ -39,13 +39,12 @@ export function Cell({ project, index }: { project: Project; index: number }) {
       aria-label={`Open ${project.title}`}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden md:aspect-[16/10]">
-        <Image
-          src={cover.url}
-          alt={cover.alt || project.title}
-          fill
+        <MediaImage
+          media={cover}
           sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+          className="transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
         />
+        <MediaKindBadge media={cover} />
         <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
       </div>
 
@@ -66,7 +65,7 @@ export function Cell({ project, index }: { project: Project; index: number }) {
       <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
         <span className="truncate">{project.category}</span>
         <span className="hidden tracking-mono md:inline">
-          {String(project.images.length).padStart(2, '0')} images
+          {String(project.media.length).padStart(2, '0')} {project.media.length === 1 ? 'work' : 'works'}
         </span>
       </div>
     </motion.button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Project } from './types';
+import type { Project, Token } from './types';
 
 const BASE = '';
 
@@ -39,7 +39,9 @@ export type ProjectInput = {
   credits?: string;
   published?: boolean;
   coverId?: string | null;
+  coverTokenId?: string | null;
   imageIds?: string[];
+  tokenIds?: string[];
   order?: number;
 };
 
@@ -149,6 +151,86 @@ export function useSeedProjects() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Tezos tokens (admin only)
+
+export type TokenPoolResponse = {
+  tokens: Token[];
+  contracts: { contract: string; name: string; count: number; own: boolean }[];
+  wallets: string[];
+};
+
+export function useTokenPool(filters: { contract?: string | null; q?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.contract) params.set('contract', filters.contract);
+  if (filters.q) params.set('q', filters.q);
+  const qs = params.toString();
+  return useQuery<TokenPoolResponse>({
+    queryKey: ['tokens', filters.contract ?? null, filters.q ?? ''],
+    queryFn: () => jsonOrThrow(fetch(`${BASE}/api/tokens${qs ? `?${qs}` : ''}`)),
+    staleTime: 30_000,
+  });
+}
+
+export function useSetTokenHidden() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) =>
+      jsonOrThrow<{ token: Token }>(
+        fetch(`${BASE}/api/tokens/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ hidden }),
+        })
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tokens'] });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+export type SyncProgress = {
+  running: boolean;
+  phase: 'idle' | 'tokens' | 'projects' | 'media' | 'done' | 'error';
+  startedAt: string | null;
+  finishedAt: string | null;
+  tokensSeen: number;
+  tokensUpserted: number;
+  projectsTouched: number;
+  mediaTotal: number;
+  mediaDone: number;
+  mediaFailed: number;
+  errors: string[];
+};
+
+/** Polls sync progress every 1.5s while a sync runs. */
+export function useSyncProgress() {
+  return useQuery<{ progress: SyncProgress; wallets: string[] }>({
+    queryKey: ['tezos-sync'],
+    queryFn: () => jsonOrThrow(fetch(`${BASE}/api/tezos/sync`)),
+    refetchInterval: (q) => (q.state.data?.progress.running ? 1500 : false),
+    staleTime: 0,
+  });
+}
+
+export function useStartSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (opts: { full?: boolean; media?: boolean }) =>
+      jsonOrThrow<{ started: boolean }>(
+        fetch(`${BASE}/api/tezos/sync`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(opts),
+        })
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tezos-sync'] });
     },
   });
 }

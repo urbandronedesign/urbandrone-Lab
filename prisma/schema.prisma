@@ -20,6 +20,14 @@ model Project {
   coverId     String?
   cover       Image?   @relation("ProjectCover", fields: [coverId], references: [id], onDelete: SetNull)
   images      Image[]  @relation("ProjectImages")
+  // Tezos: "manual" (uploads and/or hand-picked tokens) or "contract"
+  // (auto-created from a collection contract you own; membership is
+  // maintained by the sync, texts and order are yours).
+  source       String         @default("manual")
+  contract     String?        @unique
+  coverTokenId String?
+  coverToken   Token?         @relation("ProjectCoverToken", fields: [coverTokenId], references: [id], onDelete: SetNull)
+  tokens       ProjectToken[]
   order       Int      @default(0)
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -27,6 +35,57 @@ model Project {
 
   @@index([order])
   @@index([published])
+}
+
+// A Tezos NFT you minted, as indexed by objkt.com. Chain data is refreshed by
+// the sync; `hidden` and the local media variants are ours.
+model Token {
+  id             String    @id // "<contract>:<tokenId>"
+  pk             Int       @unique // objkt row id, used as the pagination cursor
+  contract       String
+  tokenId        String
+  creator        String
+  name           String    @default("")
+  description    String    @default("")
+  mime           String    @default("")
+  artifactUri    String    @default("")
+  displayUri     String    @default("")
+  thumbnailUri   String    @default("")
+  width          Int?
+  height         Int?
+  supply         Int       @default(1)
+  tags           String    @default("") // comma-separated
+  collectionName String    @default("")
+  collectionPath String    @default("") // objkt.com/collections/<path>
+  mintedAt       DateTime?
+  // Local optimized variants live at public/media/<mediaKey>-<width>.webp
+  mediaKey       String?
+  mediaWidths    String    @default("") // e.g. "400,800,1600"
+  placeholder    String?   // tiny base64 data URL for the blur-up
+  hidden         Boolean   @default(false)
+  syncedAt       DateTime  @updatedAt
+  projects       ProjectToken[]
+  coverFor       Project[] @relation("ProjectCoverToken")
+
+  @@index([contract])
+  @@index([creator])
+}
+
+model ProjectToken {
+  projectId String
+  tokenId   String
+  order     Int     @default(0)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  token     Token   @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tokenId])
+  @@index([projectId, order])
+}
+
+// Small key/value store (sync cursors etc.)
+model Setting {
+  key   String @id
+  value String
 }
 
 model Image {

@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useProjects, useDeleteProject, useReorderProjects, useSeedProjects } from '@/lib/queries';
+import { useProjects, useDeleteProject, useReorderProjects, useSeedProjects, useStartSync, useSyncProgress } from '@/lib/queries';
+import { TokenPool } from './TokenPool';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { ProjectForm } from './ProjectForm';
@@ -30,8 +32,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import Image from 'next/image';
-import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut } from 'lucide-react';
+import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut, Hexagon } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/gallery/Footer';
@@ -61,7 +62,7 @@ function Row({
     zIndex: isDragging ? 10 : 1,
   } as React.CSSProperties;
 
-  const cover = project.cover ?? project.images[0];
+  const cover = project.cover ?? project.media[0];
 
   return (
     <div
@@ -84,20 +85,27 @@ function Row({
 
       <div className="relative aspect-[4/3] w-16 overflow-hidden bg-muted">
         {cover && (
-          <Image
+          <img
             src={cover.url}
             alt={cover.alt || project.title}
-            fill
-            sizes="64px"
-            className="object-cover"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={cover.placeholder ? { backgroundImage: `url(${cover.placeholder})`, backgroundSize: 'cover' } : undefined}
           />
         )}
       </div>
 
       <div className="min-w-0">
-        <p className="truncate font-display text-base leading-tight">{project.title}</p>
+        <p className="flex items-center gap-2 truncate font-display text-base leading-tight">
+          {project.title}
+          {project.source === 'contract' && (
+            <span title={project.contract ?? ''} className="inline-flex shrink-0 items-center gap-1 border border-border px-1.5 py-0.5 font-sans tracking-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
+              <Hexagon className="h-2.5 w-2.5" /> contract
+            </span>
+          )}
+        </p>
         <p className="tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          {project.category} · {project.year} · {project.images.length} img
+          {project.category} · {project.year} · {project.tokens.length} tokens · {project.images.length} img
         </p>
       </div>
 
@@ -138,6 +146,27 @@ export function AdminView() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
   const [confirmSeed, setConfirmSeed] = useState(false);
+  const [tab, setTab] = useState<'projects' | 'tokens'>('projects');
+  const sync = useSyncProgress();
+  const startSync = useStartSync();
+  const progress = sync.data?.progress;
+  const syncing = !!progress?.running;
+  const syncLabel = !progress || !syncing
+    ? 'Sync Tezos'
+    : progress.phase === 'tokens'
+    ? `Fetching tokens… ${progress.tokensSeen}`
+    : progress.phase === 'projects'
+    ? 'Updating collections…'
+    : `Media ${progress.mediaDone}/${progress.mediaTotal}`;
+
+  const onSync = async (full = false) => {
+    try {
+      await startSync.mutateAsync({ full });
+      toast.message(full ? 'Full sync started' : 'Sync started', { description: 'Fetching your tokens from objkt…' });
+    } catch (e: any) {
+      toast.error('Sync failed to start', { description: e?.message });
+    }
+  };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -194,6 +223,17 @@ export function AdminView() {
             </div>
             <div className="flex items-center gap-2">
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSync(false)}
+                onContextMenu={(e) => { e.preventDefault(); onSync(true); }}
+                disabled={syncing || startSync.isPending}
+                title="Fetch new/changed tokens from objkt and refresh media. Right-click for a full re-sync."
+              >
+                {syncing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Hexagon className="mr-2 h-3.5 w-3.5" />}
+                {syncLabel}
+              </Button>
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setConfirmSeed(true)}
@@ -222,13 +262,33 @@ export function AdminView() {
       </header>
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 py-8 md:px-12 lg:px-24">
-        {/* Table header */}
+        <Tabs value={tab} onValueChange={(v) => setTab(v as 'projects' | 'tokens')}>
         <div className="mb-4 flex items-baseline justify-between border-b border-border pb-3">
-          <h2 className="font-display text-xl italic">Projects</h2>
+          <TabsList className="h-auto bg-transparent p-0">
+            <TabsTrigger value="projects" className="rounded-none border-b-2 border-transparent px-0 pb-1 font-display text-xl italic data-[state=active]:border-foreground data-[state=active]:shadow-none">
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="tokens" className="ml-6 rounded-none border-b-2 border-transparent px-0 pb-1 font-display text-xl italic data-[state=active]:border-foreground data-[state=active]:shadow-none">
+              Tezos tokens
+            </TabsTrigger>
+          </TabsList>
           <span className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            {projects.length} total · drag rows to reorder
+            {tab === 'projects' ? `${projects.length} total · drag rows to reorder` : 'select tokens to hide / show · ★ = your contracts'}
           </span>
         </div>
+
+        {progress && !syncing && progress.phase !== 'idle' && (
+          <p className="mb-4 tracking-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Last sync: {progress.phase} · {progress.tokensUpserted} tokens · {progress.projectsTouched} collections · media {progress.mediaDone}/{progress.mediaTotal}
+            {progress.mediaFailed ? ` · ${progress.mediaFailed} failed (will retry next sync)` : ''}
+            {progress.errors.length ? ` · ${progress.errors[progress.errors.length - 1].slice(0, 120)}` : ''}
+          </p>
+        )}
+
+        <TabsContent value="tokens" className="mt-0">
+          <TokenPool />
+        </TabsContent>
+        <TabsContent value="projects" className="mt-0">
 
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
@@ -288,6 +348,8 @@ export function AdminView() {
             </div>
           ))}
         </div>
+        </TabsContent>
+        </Tabs>
       </main>
 
       <Footer projectCount={projects.length} />

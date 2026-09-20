@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { projectInclude, serializeProject } from '@/lib/serialize';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,28 +10,29 @@ export async function GET(req: NextRequest) {
   const projects = await db.project.findMany({
     where: all ? undefined : { published: true },
     orderBy: { order: 'asc' },
-    include: {
-      cover: true,
-      images: { orderBy: { createdAt: 'asc' } },
-    },
+    include: projectInclude,
   });
-  return NextResponse.json({ projects });
+  return NextResponse.json({ projects: projects.map(serializeProject) });
 }
+
+export type ProjectBody = {
+  title?: string;
+  year?: number;
+  category?: string;
+  description?: string;
+  credits?: string;
+  published?: boolean;
+  coverId?: string | null;
+  coverTokenId?: string | null;
+  imageIds?: string[];
+  tokenIds?: string[];
+  order?: number;
+};
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { title, year, category, description, credits, published, coverId, imageIds, order } = body as {
-      title: string;
-      year: number;
-      category: string;
-      description?: string;
-      credits?: string;
-      published?: boolean;
-      coverId?: string | null;
-      imageIds?: string[];
-      order?: number;
-    };
+    const body = (await req.json()) as ProjectBody;
+    const { title, year, category, description, credits, published, coverId, coverTokenId, imageIds, tokenIds, order } = body;
 
     if (!title || !year || !category) {
       return NextResponse.json({ error: 'title, year, category are required' }, { status: 400 });
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       orderValue = (max._max.order ?? -1) + 1;
     }
 
-    const project = await db.project.create({
+    const created = await db.project.create({
       data: {
         title,
         year,
@@ -53,21 +55,30 @@ export async function POST(req: NextRequest) {
         published: published ?? true,
         order: orderValue,
         coverId: coverId ?? null,
-        images: imageIds?.length
-          ? { connect: imageIds.map((id) => ({ id })) }
+        coverTokenId: coverTokenId ?? null,
+        images: imageIds?.length ? { connect: imageIds.map((id) => ({ id })) } : undefined,
+        tokens: tokenIds?.length
+          ? { create: tokenIds.map((tokenId, i) => ({ tokenId, order: i })) }
           : undefined,
       },
-      include: { cover: true, images: { orderBy: { createdAt: 'asc' } } },
+      include: projectInclude,
     });
 
-    // If coverId was not provided but images exist, use the first as cover
-    if (!project.coverId && project.images.length > 0) {
-      const first = project.images[0];
-      await db.project.update({ where: { id: project.id }, data: { coverId: first.id } });
+    // Default cover: first token, else first image
+    if (!created.coverId && !created.coverTokenId) {
+      const firstToken = created.tokens[0]?.tokenId;
+      const firstImage = created.images[0]?.id;
+      if (firstToken || firstImage) {
+        await db.project.update({
+          where: { id: created.id },
+          data: firstToken ? { coverTokenId: firstToken } : { coverId: firstImage },
+        });
+      }
     }
 
+    const project = await db.project.findUniqueOrThrow({ where: { id: created.id }, include: projectInclude });
     revalidatePath('/');
-    return NextResponse.json({ project }, { status: 201 });
+    return NextResponse.json({ project: serializeProject(project) }, { status: 201 });
   } catch (e: any) {
     console.error('POST /api/projects error', e);
     return NextResponse.json({ error: e?.message ?? 'Server error' }, { status: 500 });

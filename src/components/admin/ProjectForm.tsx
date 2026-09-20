@@ -15,8 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { ImageManager, type ManagedImage } from './ImageManager';
+import { TokenManager } from './TokenManager';
 import { useCreateProject, useUpdateProject } from '@/lib/queries';
-import type { Project } from '@/lib/types';
+import type { Project, Token } from '@/lib/types';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -77,6 +78,9 @@ export function ProjectForm({
   const [form, setForm] = useState<FormState>(() => initialForm(project));
   const [images, setImages] = useState<ManagedImage[]>(() => initialImages(project));
   const [coverId, setCoverId] = useState<string | null>(project?.coverId ?? null);
+  const [tokens, setTokens] = useState<Token[]>(project?.tokens ?? []);
+  const [coverTokenId, setCoverTokenId] = useState<string | null>(project?.coverTokenId ?? null);
+  const locked = project?.source === 'contract';
 
   // Reset the draft whenever the dialog opens (or opens on a different project).
   // Done during render rather than in an effect so the first paint is already correct.
@@ -89,6 +93,8 @@ export function ProjectForm({
     setForm(initialForm(project));
     setImages(initialImages(project));
     setCoverId(project?.coverId ?? null);
+    setTokens(project?.tokens ?? []);
+    setCoverTokenId(project?.coverTokenId ?? null);
   } else if (open !== prevOpen) {
     setPrevOpen(open);
   }
@@ -110,8 +116,8 @@ export function ProjectForm({
       toast.error('Category is required');
       return;
     }
-    if (images.length === 0) {
-      toast.error('Add at least one image');
+    if (images.length === 0 && tokens.length === 0) {
+      toast.error('Add at least one image or token');
       return;
     }
 
@@ -122,8 +128,11 @@ export function ProjectForm({
       description: form.description,
       credits: form.credits,
       published: form.published,
-      coverId: coverId ?? images[0]?.id ?? null,
+      // One cover: a token or an image, never both
+      coverTokenId: coverTokenId ?? (coverId ? null : tokens[0]?.id ?? null),
+      coverId: coverTokenId ? null : coverId ?? (tokens.length ? null : images[0]?.id ?? null),
       imageIds: images.map((i) => i.id),
+      tokenIds: tokens.map((t) => t.id),
     };
 
     try {
@@ -152,7 +161,7 @@ export function ProjectForm({
             {isEdit ? 'Edit Project' : 'New Project'}
           </DialogTitle>
           <DialogDescription className="text-xs tracking-mono uppercase tracking-[0.2em]">
-            {isEdit ? `Editing · ${project?.title}` : 'Create a new graphical project'}
+            {isEdit ? `Editing · ${project?.title}${locked ? ' · contract collection' : ''}` : 'Create a new project'}
           </DialogDescription>
         </DialogHeader>
 
@@ -244,21 +253,34 @@ export function ProjectForm({
             </div>
           </div>
 
-          {/* Right column: image manager */}
-          <div className="md:col-span-3">
+          {/* Right column: tokens + uploads */}
+          <div className="space-y-8 md:col-span-3">
+            <TokenManager
+              tokens={tokens}
+              onChange={setTokens}
+              coverTokenId={coverTokenId}
+              onCoverChange={(id) => {
+                setCoverTokenId(id);
+                if (id) setCoverId(null);
+              }}
+              locked={locked}
+            />
             <ImageManager
               images={images}
               onChange={setImages}
               coverId={coverId}
-              onCoverChange={setCoverId}
+              onCoverChange={(id) => {
+                setCoverId(id);
+                if (id) setCoverTokenId(null);
+              }}
             />
           </div>
         </div>
 
         <DialogFooter className="flex !flex-row items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
           <p className="text-xs text-muted-foreground tracking-mono">
-            {images.length} image{images.length === 1 ? '' : 's'} ·{' '}
-            {coverId ? 'cover set' : 'first image becomes cover'}
+            {tokens.length} token{tokens.length === 1 ? '' : 's'} · {images.length} image{images.length === 1 ? '' : 's'} ·{' '}
+            {coverId || coverTokenId ? 'cover set' : 'first item becomes cover'}
           </p>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>

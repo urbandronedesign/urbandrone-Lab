@@ -16,11 +16,13 @@ export async function proxy(req: NextRequest) {
   const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/');
   const isLoginPage = pathname === '/admin/login';
   // Reads stay public (the gallery needs them); anything that changes data,
-  // plus the unpublished listing, requires a session.
+  // the unpublished listing and the admin-only token/sync endpoints require a session.
   const isProtectedApi =
     pathname.startsWith('/api/') &&
     (MUTATING.has(req.method) ||
-      (pathname === '/api/projects' && searchParams.get('all') === 'true'));
+      (pathname === '/api/projects' && searchParams.get('all') === 'true') ||
+      pathname.startsWith('/api/tokens') ||
+      pathname.startsWith('/api/tezos'));
 
   if (!isAdminPage && !isProtectedApi) return NextResponse.next();
 

@@ -3,14 +3,14 @@
 import { useGalleryStore } from '@/lib/store';
 import type { Project } from '@/lib/types';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { MediaImage } from '@/components/media/MediaImage';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function Hero({ project, index }: { project: Project; index: number }) {
   const openProject = useGalleryStore((s) => s.openProject);
 
-  const cover = project.cover ?? project.images[0];
+  const cover = project.cover ?? project.media[0];
   if (!cover) return null;
 
   const label = String(index + 1).padStart(2, '0');
@@ -27,13 +27,11 @@ export function Hero({ project, index }: { project: Project; index: number }) {
         aria-label={`Open ${project.title}`}
       >
         <div className="relative aspect-[16/10] w-full md:aspect-[16/9] lg:aspect-[2.35/1]">
-          <Image
-            src={cover.url}
-            alt={cover.alt || project.title}
-            fill
+          <MediaImage
+            media={cover}
             priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1600px) 100vw, 1600px"
-            className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+            sizes="100vw"
+            className="transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
           />
           {/* subtle bottom gradient for legibility */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0" />
