@@ -93,7 +93,8 @@ and **Traffic** once GoatCounter is connected. Projects live at `/admin/projects
    site code; paste it into *Site → Analytics* and publish. The public site loads
    GoatCounter's counter script — it sets no cookies and stores no personal data, so
    no consent banner is needed under GDPR.
-2. In GoatCounter → *Settings → API*, create a token with *Read statistics* and set
+2. In GoatCounter, open the menu under your user name (top right) → *API*
+   (`https://<code>.goatcounter.com/user/api`), create a token with *Read statistics* and set
    `GOATCOUNTER_API_TOKEN` in `.env`. The dashboard then shows the last 30 days:
    visitors, per-day chart, **a world map of visitors by country**, top pages,
    sources, browsers and systems (cached 10 min; *refresh* bypasses the cache).

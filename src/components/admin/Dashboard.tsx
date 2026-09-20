@@ -371,13 +371,13 @@ function Setup({ step, code, compact = false }: { step: 1 | 2; code?: string; co
           Paste that code into <Link href="/admin/site" className="underline underline-offset-4">Site → Analytics</Link> and publish. The public site starts counting.
         </li>
         <li>
-          In GoatCounter → <strong>Settings → API</strong>, create a token with the <em>Read statistics</em> permission and add it to <code className="tracking-mono">.env</code>:
+          In GoatCounter, open the menu under <strong>your user name (top right) → API</strong>, click <em>Create new API token</em> with the <em>Read statistics</em> permission, copy it (shown once) and add it to <code className="tracking-mono">.env</code>:
           <pre className="mt-1 whitespace-pre-wrap bg-muted p-2 tracking-mono text-[10px] text-foreground">{'GOATCOUNTER_API_TOKEN=…'}</pre>
           Restart the dev server.
           {code ? (
             <>
-              {' '}Settings live at{' '}
-              <a href={`https://${code}.goatcounter.com/settings/main`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{code}.goatcounter.com/settings</a>.
+              {' '}Direct link:{' '}
+              <a href={`https://${code}.goatcounter.com/user/api`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{code}.goatcounter.com/user/api</a>.
             </>
           ) : null}
         </li>
