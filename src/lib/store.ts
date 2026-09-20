@@ -28,15 +28,13 @@ export const useGalleryStore = create<GalleryStore>((set) => ({
 }));
 
 // Helpers to sync URL <-> store
-export function parseViewFromHash(): { view: View; p: string | null; admin: boolean } {
-  if (typeof window === 'undefined') return { view: 'gallery', p: null, admin: false };
+export function parseViewFromHash(): { view: View; p: string | null } {
+  if (typeof window === 'undefined') return { view: 'gallery', p: null };
   const u = new URL(window.location.href);
   const v = (u.searchParams.get('v') as View | null) ?? 'gallery';
   const p = u.searchParams.get('p');
-  const admin = u.searchParams.get('v') === 'admin';
-  if (admin) return { view: 'admin', p: null, admin: true };
-  if (v === 'project' && p) return { view: 'project', p, admin: false };
-  return { view: 'gallery', p: null, admin: false };
+  if (v === 'project' && p) return { view: 'project', p };
+  return { view: 'gallery', p: null };
 }
 
 export function syncUrl(view: View, projectId: string | null) {
@@ -47,8 +45,6 @@ export function syncUrl(view: View, projectId: string | null) {
   if (view === 'project' && projectId) {
     url.searchParams.set('v', 'project');
     url.searchParams.set('p', projectId);
-  } else if (view === 'admin') {
-    url.searchParams.set('v', 'admin');
   }
   window.history.replaceState(null, '', url.toString());
 }

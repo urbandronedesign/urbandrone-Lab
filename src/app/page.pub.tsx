@@ -1,11 +1,9 @@
 import { db } from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { Gallery } from '@/components/gallery/Gallery';
 import type { Project } from '@/lib/types';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-type RawProject = Awaited<ReturnType<typeof db.project.findMany>>[number];
+type RawProject = Prisma.ProjectGetPayload<{ include: { cover: true; images: true } }>;
 
 function serialize(p: RawProject): Project {
   return {
@@ -50,7 +48,7 @@ export default async function Home() {
     projects = raw.map(serialize);
   } catch (e) {
     // Database may not be ready yet (fresh clone). The client will show
-    // a friendly empty state and offer to seed demo content.
+    // a friendly empty state pointing to the admin.
     console.error('Home: failed to load projects', e);
   }
 

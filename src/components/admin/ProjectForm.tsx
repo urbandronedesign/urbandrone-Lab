@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,36 @@ type FormState = {
   published: boolean;
 };
 
+function initialForm(project?: Project | null): FormState {
+  return project
+    ? {
+        title: project.title,
+        year: String(project.year),
+        category: project.category,
+        description: project.description,
+        credits: project.credits,
+        published: project.published,
+      }
+    : {
+        title: '',
+        year: String(new Date().getFullYear()),
+        category: '',
+        description: '',
+        credits: '',
+        published: true,
+      };
+}
+
+function initialImages(project?: Project | null): ManagedImage[] {
+  return (project?.images ?? []).map((im) => ({
+    id: im.id,
+    url: im.url,
+    width: im.width,
+    height: im.height,
+    alt: im.alt,
+  }));
+}
+
 export function ProjectForm({
   open,
   onOpenChange,
@@ -44,51 +74,24 @@ export function ProjectForm({
   const create = useCreateProject();
   const update = useUpdateProject();
 
-  const [form, setForm] = useState<FormState>({
-    title: '',
-    year: String(new Date().getFullYear()),
-    category: '',
-    description: '',
-    credits: '',
-    published: true,
-  });
-  const [images, setImages] = useState<ManagedImage[]>([]);
-  const [coverId, setCoverId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(() => initialForm(project));
+  const [images, setImages] = useState<ManagedImage[]>(() => initialImages(project));
+  const [coverId, setCoverId] = useState<string | null>(project?.coverId ?? null);
 
-  useEffect(() => {
-    if (!open) return;
-    if (project) {
-      setForm({
-        title: project.title,
-        year: String(project.year),
-        category: project.category,
-        description: project.description,
-        credits: project.credits,
-        published: project.published,
-      });
-      setImages(
-        project.images.map((im) => ({
-          id: im.id,
-          url: im.url,
-          width: im.width,
-          height: im.height,
-          alt: im.alt,
-        }))
-      );
-      setCoverId(project.coverId);
-    } else {
-      setForm({
-        title: '',
-        year: String(new Date().getFullYear()),
-        category: '',
-        description: '',
-        credits: '',
-        published: true,
-      });
-      setImages([]);
-      setCoverId(null);
-    }
-  }, [open, project]);
+  // Reset the draft whenever the dialog opens (or opens on a different project).
+  // Done during render rather than in an effect so the first paint is already correct.
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevProjectId, setPrevProjectId] = useState(project?.id ?? null);
+  const projectId = project?.id ?? null;
+  if (open && (!prevOpen || projectId !== prevProjectId)) {
+    setPrevOpen(open);
+    setPrevProjectId(projectId);
+    setForm(initialForm(project));
+    setImages(initialImages(project));
+    setCoverId(project?.coverId ?? null);
+  } else if (open !== prevOpen) {
+    setPrevOpen(open);
+  }
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));

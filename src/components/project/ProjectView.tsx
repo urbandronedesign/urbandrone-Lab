@@ -1,7 +1,7 @@
 'use client';
 
 import { useGalleryStore } from '@/lib/store';
-import { useProject } from '@/lib/queries';
+import type { Project } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X, ArrowLeft } from 'lucide-react';
@@ -157,8 +157,7 @@ function Thumbnails({
   );
 }
 
-export function ProjectView({ id, allProjects }: { id: string; allProjects: { id: string; title: string }[] }) {
-  const { data, isLoading, error } = useProject(id);
+export function ProjectView({ id, allProjects }: { id: string; allProjects: Project[] }) {
   const setView = useGalleryStore((s) => s.setView);
   const openProject = useGalleryStore((s) => s.openProject);
   const lightboxOpen = useGalleryStore((s) => s.lightboxOpen);
@@ -166,18 +165,9 @@ export function ProjectView({ id, allProjects }: { id: string; allProjects: { id
   const lightboxIndex = useGalleryStore((s) => s.lightboxIndex);
   const setLightboxIndex = useGalleryStore((s) => s.setLightboxIndex);
 
-  const project = data?.project;
+  const project = allProjects.find((p) => p.id === id);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="tracking-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
-          Loading…
-        </span>
-      </div>
-    );
-  }
-  if (error || !project) {
+  if (!project) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
         <p className="font-display text-2xl italic">Project not found.</p>

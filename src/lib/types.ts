@@ -24,4 +24,4 @@ export type Project = {
   updatedAt: string;
 };
 
-export type View = 'gallery' | 'project' | 'admin';
+export type View = 'gallery' | 'project';

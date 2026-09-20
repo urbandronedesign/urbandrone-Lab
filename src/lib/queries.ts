@@ -5,7 +5,8 @@ import type { Project } from './types';
 
 const BASE = '';
 
-async function jsonOrThrow<T>(res: Response): Promise<T> {
+async function jsonOrThrow<T>(input: Response | Promise<Response>): Promise<T> {
+  const res = await input;
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(txt || `${res.status} ${res.statusText}`);

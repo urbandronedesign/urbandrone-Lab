@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useProjects, useDeleteProject, useReorderProjects, useSeedProjects } from '@/lib/queries';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useGalleryStore } from '@/lib/store';
 import { ProjectForm } from './ProjectForm';
 import {
   Dialog,
@@ -30,7 +31,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Image from 'next/image';
-import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/gallery/Footer';
@@ -126,9 +127,8 @@ function Row({
 }
 
 export function AdminView() {
+  const router = useRouter();
   const { data, isLoading, error } = useProjects(true);
-  const setView = useGalleryStore((s) => s.setView);
-  const openProject = useGalleryStore((s) => s.openProject);
   const del = useDeleteProject();
   const reorder = useReorderProjects();
   const seed = useSeedProjects();
@@ -157,6 +157,12 @@ export function AdminView() {
     } catch (e: any) {
       toast.error('Reorder failed', { description: e?.message });
     }
+  };
+
+  const signOut = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.replace('/admin/login');
+    router.refresh();
   };
 
   const onTogglePublish = async (project: Project, pub: boolean) => {
@@ -196,13 +202,15 @@ export function AdminView() {
                 {seed.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-2 h-3.5 w-3.5" />}
                 Seed demo
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setView('gallery')}
-              >
-                <ArrowLeft className="mr-2 h-3.5 w-3.5" />
-                Back to gallery
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/">
+                  <ArrowLeft className="mr-2 h-3.5 w-3.5" />
+                  Back to gallery
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={signOut} title="Sign out">
+                <LogOut className="mr-2 h-3.5 w-3.5" />
+                Sign out
               </Button>
               <Button size="sm" onClick={() => { setEditingId(null); setFormOpen(true); }}>
                 <Plus className="mr-2 h-3.5 w-3.5" />

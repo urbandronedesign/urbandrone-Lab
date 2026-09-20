@@ -1,17 +1,10 @@
 'use client';
 
-import { useGalleryStore } from '@/lib/store';
-import { Asterisk } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export function Footer({ projectCount }: { projectCount: number }) {
-  const setView = useGalleryStore((s) => s.setView);
-  const view = useGalleryStore((s) => s.view);
   const [year] = useState(() => new Date().getFullYear());
-
-  useEffect(() => {
-    // noop — placeholder so React doesn't complain
-  }, []);
 
   return (
     <footer
@@ -33,29 +26,9 @@ export function Footer({ projectCount }: { projectCount: number }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setView('gallery')}
-              className={
-                'transition hover:text-foreground ' +
-                (view === 'gallery' ? 'text-foreground' : '')
-              }
-            >
+            <Link href="/" className="transition hover:text-foreground">
               Index
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('admin')}
-              className={
-                'inline-flex items-center gap-1.5 transition hover:text-foreground ' +
-                (view === 'admin' ? 'text-foreground' : '')
-              }
-              aria-label="Enter admin"
-              title="Admin"
-            >
-              <Asterisk className="h-3.5 w-3.5" aria-hidden />
-              <span className="hidden sm:inline">Admin</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

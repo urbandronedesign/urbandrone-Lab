@@ -2,9 +2,11 @@ import ZAI from 'z-ai-web-dev-sdk';
 import fs from 'fs';
 import path from 'path';
 
-const OUT = '/home/z/my-project/public/uploads';
+const ROOT = process.cwd();
+const OUT = path.join(ROOT, 'public', 'uploads');
 
-type Job = { prompt: string; size: string; name: string };
+type ImageSize = NonNullable<Parameters<Awaited<ReturnType<typeof ZAI.create>>['images']['generations']['create']>[0]['size']>;
+type Job = { prompt: string; size: ImageSize; name: string };
 
 const jobs: Job[] = [
   // Project 1: "Concrete & Light" — Brutalist architecture
@@ -59,7 +61,7 @@ async function main() {
       console.error(`  -> FAIL ${j.name}: ${e?.message ?? e}`);
     }
   }
-  fs.writeFileSync('/home/z/my-project/scripts/manifest.json', JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(path.join(ROOT, 'scripts', 'manifest.json'), JSON.stringify(manifest, null, 2));
   console.log('DONE. Manifest written to scripts/manifest.json');
 }
 

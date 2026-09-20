@@ -4,47 +4,24 @@ import type { Project } from '@/lib/types';
 import { Hero } from './Hero';
 import { Cell } from './Cell';
 import { motion } from 'framer-motion';
-import { useGalleryStore } from '@/lib/store';
-import { useSeedProjects } from '@/lib/queries';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function GalleryView({ projects }: { projects: Project[] }) {
-  const setView = useGalleryStore((s) => s.setView);
-  const seed = useSeedProjects();
-
   if (projects.length === 0) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center">
         <div>
           <p className="font-display text-3xl italic text-muted-foreground">An empty room.</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            No projects yet. Seed the gallery with the demo collection or build your own.
+            No projects yet. Sign in to the admin to create your first project.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={async () => {
-              try {
-                await seed.mutateAsync(false);
-                toast.success('Demo projects seeded');
-              } catch (e: any) {
-                toast.error('Seed failed', { description: e?.message });
-              }
-            }}
-            disabled={seed.isPending}
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            {seed.isPending ? 'Seeding…' : 'Seed demo projects'}
-          </Button>
-          <Button variant="default" onClick={() => setView('admin')}>
-            Open Admin
-          </Button>
-        </div>
+        <Button variant="default" asChild>
+          <Link href="/admin">Open Admin</Link>
+        </Button>
       </div>
     );
   }
