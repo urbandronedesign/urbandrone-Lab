@@ -30,7 +30,12 @@ export const metadata: Metadata = {
   keywords: ["portfolio", "gallery", "atelier", "minimal", "fullscreen", "Next.js"],
   authors: [{ name: "Atelier" }],
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "Atelier — A Project Gallery",

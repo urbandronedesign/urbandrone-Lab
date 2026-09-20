@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { useRouter } from 'next/navigation';
 import { useProjects, useDeleteProject, useReorderProjects, useSeedProjects, useStartSync, useSyncProgress } from '@/lib/queries';
 import { TokenPool } from './TokenPool';
@@ -213,7 +214,8 @@ export function AdminView() {
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-30">
         <div className="mx-auto w-full max-w-[1600px] px-6 md:px-12 lg:px-24">
           <div className="flex h-16 items-center justify-between gap-4">
-            <div className="flex items-baseline gap-3">
+            <div className="flex items-center gap-3">
+              <Logo className="h-6 w-6" />
               <h1 className="font-display text-2xl italic">Atelier</h1>
               <span className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                 · Admin

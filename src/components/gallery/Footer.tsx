@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { useState } from 'react';
 
 export function Footer({ projectCount }: { projectCount: number }) {
@@ -16,6 +17,7 @@ export function Footer({ projectCount }: { projectCount: number }) {
       <div className="mx-auto w-full max-w-[1600px] px-6 md:px-12 lg:px-24">
         <div className="flex h-14 items-center justify-between gap-4 text-xs tracking-wide text-muted-foreground">
           <div className="flex items-center gap-3 tracking-mono">
+            <Logo className="h-4 w-4 text-foreground" />
             <span>© {year}</span>
             <span aria-hidden>·</span>
             <span className="font-display italic text-foreground/80">Atelier</span>

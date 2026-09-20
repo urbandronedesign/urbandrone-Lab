@@ -16,6 +16,7 @@ import { MediaPlayer, MediaLinks } from '@/components/media/MediaPlayer';
 import { ImageManager, type ManagedImage } from './ImageManager';
 import { TokenManager } from './TokenManager';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/Logo';
 
 type FormState = {
   title: string;
@@ -179,6 +180,9 @@ function Editor({ project }: { project: Project | null }) {
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-[1800px] items-center justify-between gap-4 px-6 md:px-10">
           <div className="flex min-w-0 items-center gap-4">
+            <Link href="/admin" className="shrink-0" aria-label="Admin home">
+              <Logo className="h-6 w-6" />
+            </Link>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin">
                 <ArrowLeft className="mr-2 h-3.5 w-3.5" /> Projects
