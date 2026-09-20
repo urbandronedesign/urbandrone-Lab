@@ -1,6 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import type { Project } from '@/lib/types';
 import { Prose } from './Prose';
+import { Downloads } from './Downloads';
+import { parseReleasesUrl, type ReleaseInfo } from '@/lib/github';
 
 function fmtDate(iso: string | null) {
   if (!iso) return null;
@@ -8,12 +10,17 @@ function fmtDate(iso: string | null) {
 }
 
 /** Title, description and the facts column for a project page. */
-export function ProjectMeta({ project }: { project: Project }) {
+export function ProjectMeta({ project, downloads = [] }: { project: Project; downloads?: ReleaseInfo[] }) {
   const tokens = project.tokens.filter((t) => !t.hidden);
   const first = tokens[0];
   const minted = tokens.map((t) => t.mintedAt).filter(Boolean).sort();
   const editions = tokens.reduce((n, t) => n + (t.supply || 0), 0);
   const collectionUrl = project.contract && first?.collectionPath ? `https://objkt.com/collections/${first.collectionPath}` : null;
+  const resolved = new Set(downloads.map((d) => `${d.owner}/${d.repo}`.toLowerCase()));
+  const plainLinks = project.links.filter((l) => {
+    const p = parseReleasesUrl(l.url);
+    return !(p && resolved.has(`${p.owner}/${p.repo}`.toLowerCase()));
+  });
 
   return (
     <section className="gutter mx-auto grid w-full max-w-[1600px] gap-10 pt-12 pb-16 md:grid-cols-12 md:pt-20 md:pb-24">
@@ -38,10 +45,15 @@ export function ProjectMeta({ project }: { project: Project }) {
           {tokens.length > 0 && <Row k="Chain" v="Tezos" />}
           {project.credits && <Row k="Credits" v={project.credits} />}
         </dl>
-        {(collectionUrl || project.links.length > 0) && (
+        {downloads.length > 0 && (
+          <div className="mt-8">
+            <Downloads releases={downloads} />
+          </div>
+        )}
+        {(collectionUrl || plainLinks.length > 0) && (
           <ul className="mt-6 space-y-2">
             {collectionUrl && <LinkRow href={collectionUrl} label="Collection on objkt" />}
-            {project.links.map((l) => (
+            {plainLinks.map((l) => (
               <LinkRow key={l.url} href={l.url} label={l.label} />
             ))}
           </ul>

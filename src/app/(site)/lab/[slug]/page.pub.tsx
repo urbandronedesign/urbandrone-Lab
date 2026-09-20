@@ -4,6 +4,7 @@ import { getProjectBySlug, getPublishedProjects } from '@/lib/content';
 import { ProjectGallery } from '@/components/site/ProjectGallery';
 import { ProjectMeta } from '@/components/site/ProjectMeta';
 import { PrevNext } from '@/components/site/PrevNext';
+import { resolveDownloads } from '@/lib/github';
 
 export const dynamicParams = false;
 
@@ -26,10 +27,11 @@ export default async function LabEntryPage({ params }: { params: Promise<{ slug:
   const idx = all.findIndex((p) => p.slug === slug);
   const project = idx >= 0 ? all[idx] : await getProjectBySlug(slug);
   if (!project || project.section !== 'lab') notFound();
+  const downloads = await resolveDownloads(project.links);
   return (
     <>
       {/* Lab entries lead with text; media (if any) follows */}
-      <ProjectMeta project={project} />
+      <ProjectMeta project={project} downloads={downloads} />
       {project.media.length > 0 && <ProjectGallery project={project} />}
       <div className="pb-16 md:pb-24" />
       <PrevNext prev={idx > 0 ? all[idx - 1] : null} next={idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null} base="/lab/" />

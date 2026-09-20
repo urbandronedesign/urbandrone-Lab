@@ -41,6 +41,8 @@ jobs:
         run: npm run build:static
         env:
           DATABASE_URL: file:../db/custom.db
+          # Resolves "latest release" download links (lib/github.ts)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

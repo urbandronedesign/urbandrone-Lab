@@ -338,7 +338,7 @@ function Editor({ project }: { project: Project | null }) {
               </Button>
             </div>
             {form.links.length === 0 ? (
-              <p className="text-[10px] text-muted-foreground tracking-mono">GitHub, paper, demo, press…</p>
+              <p className="text-[10px] text-muted-foreground tracking-mono">GitHub, paper, demo, press… A link to a GitHub releases page becomes a Download block with the latest installers.</p>
             ) : (
               <div className="space-y-2">
                 {form.links.map((l, i) => (
