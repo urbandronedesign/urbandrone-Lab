@@ -1,10 +1,16 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { pageMeta } from '@/lib/seo';
 import { ArrowRight } from 'lucide-react';
 import { getPublishedProjects, pickFeatured } from '@/lib/content';
 import { getSite } from '@/lib/site';
 import { ArtworkGrid } from '@/components/site/ArtworkGrid';
 import { LabList } from '@/components/site/LabList';
 import { Prose } from '@/components/site/Prose';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMeta(await getSite(), '/');
+}
 
 // Rendered once at build time for the static export.
 export default async function HomePage() {

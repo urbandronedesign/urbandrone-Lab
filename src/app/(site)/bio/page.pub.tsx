@@ -4,8 +4,13 @@ import { ExternalLink } from 'lucide-react';
 import { getBio, groupCv } from '@/lib/bio';
 import { getSite } from '@/lib/site';
 import { BioText } from '@/components/site/BioText';
+import { JsonLd } from '@/components/site/JsonLd';
+import { breadcrumbJsonLd, graph, pageMeta, personJsonLd } from '@/lib/seo';
 
-export const metadata: Metadata = { title: 'Bio' };
+export async function generateMetadata(): Promise<Metadata> {
+  const [site, bio] = await Promise.all([getSite(), getBio()]);
+  return pageMeta(site, '/bio/', { title: 'Bio', type: 'profile', description: bio.headline || site.tagline, image: bio.portrait?.url });
+}
 
 export default async function BioPage() {
   const [bio, site] = await Promise.all([getBio(), getSite()]);
@@ -14,6 +19,7 @@ export default async function BioPage() {
 
   return (
     <>
+      <JsonLd data={graph({ '@type': 'ProfilePage', mainEntity: personJsonLd(site, bio) }, breadcrumbJsonLd(site, [{ name: site.name, path: '/' }, { name: 'Bio', path: '/bio/' }]))} />
       {/* Portrait + text */}
       <section className="gutter mx-auto grid w-full max-w-[1600px] gap-10 pt-12 pb-16 md:grid-cols-12 md:pt-20 md:pb-24">
         {bio.portrait && (

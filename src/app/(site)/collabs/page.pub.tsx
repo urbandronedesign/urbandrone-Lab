@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
+import { getSite } from '@/lib/site';
+import { pageMeta } from '@/lib/seo';
 import { getPublishedProjects } from '@/lib/content';
 import { ArtworkGrid } from '@/components/site/ArtworkGrid';
 import { PageIntro } from '@/components/site/PageIntro';
 
-export const metadata: Metadata = { title: 'Collabs' };
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return pageMeta(site, '/collabs/', { title: 'Collabs', description: `Collaborations with other artists, studios and institutions.` });
+}
 
 export default async function CollabsPage() {
   const projects = await getPublishedProjects('collabs');

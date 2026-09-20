@@ -5,6 +5,9 @@ import { ProjectGallery } from '@/components/site/ProjectGallery';
 import { ProjectMeta } from '@/components/site/ProjectMeta';
 import { PrevNext } from '@/components/site/PrevNext';
 import { resolveDownloads } from '@/lib/github';
+import { getSite } from '@/lib/site';
+import { JsonLd } from '@/components/site/JsonLd';
+import { breadcrumbJsonLd, graph, pageMeta, projectDescription, projectJsonLd } from '@/lib/seo';
 
 export const dynamicParams = false;
 
@@ -16,14 +19,10 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const p = await getProjectBySlug((await params).slug);
+  const [p, site] = await Promise.all([getProjectBySlug((await params).slug), getSite()]);
   if (!p) return {};
   const cover = p.cover ?? p.media[0];
-  return {
-    title: p.title,
-    description: p.description.split(/\n/)[0].slice(0, 160) || undefined,
-    openGraph: cover ? { title: p.title, images: [{ url: cover.url, alt: cover.alt }] } : undefined,
-  };
+  return pageMeta(site, `/collabs/${p.slug}/`, { title: p.title, description: projectDescription(p, site), image: cover?.url, type: 'article' });
 }
 
 export default async function CollabPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -33,9 +32,11 @@ export default async function CollabPage({ params }: { params: Promise<{ slug: s
   const idx = all.findIndex((p) => p.slug === slug);
   const project = idx >= 0 ? all[idx] : await getProjectBySlug(slug);
   if (!project || project.section !== 'collabs') notFound();
-  const downloads = await resolveDownloads(project.links);
+  const [downloads, site] = await Promise.all([resolveDownloads(project.links), getSite()]);
+  const jsonLd = graph(projectJsonLd(project, site, downloads), breadcrumbJsonLd(site, [{ name: site.name, path: '/' }, { name: 'Collabs', path: '/collabs/' }, { name: project.title, path: `/collabs/${project.slug}/` }]));
   return (
     <>
+      <JsonLd data={jsonLd} />
       <ProjectGallery project={project}>
         <ProjectMeta project={project} downloads={downloads} />
       </ProjectGallery>

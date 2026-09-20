@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
+import { getSite } from '@/lib/site';
+import { pageMeta } from '@/lib/seo';
 import { getPublishedProjects } from '@/lib/content';
 import { LabGroups } from '@/components/site/LabList';
 import { PageIntro } from '@/components/site/PageIntro';
 
-export const metadata: Metadata = { title: 'Lab' };
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return pageMeta(site, '/lab/', { title: 'Lab', description: `Tools, course manuals and experiments from the studio: software, teaching material and research.` });
+}
 
 export default async function LabPage() {
   const projects = await getPublishedProjects('lab');

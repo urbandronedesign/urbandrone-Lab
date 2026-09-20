@@ -106,6 +106,12 @@ Step-by-step: [docs/ANALYTICS-SETUP.md](docs/ANALYTICS-SETUP.md).
    sources, browsers and systems (cached 10 min; *refresh* bypasses the cache).
    In development, `/admin/?mock=1` previews the card with sample data.
 
+## SEO
+
+robots.txt, sitemap.xml, llms.txt, canonicals, per-page descriptions and schema.org
+JSON-LD are generated at build time; the one-time Search Console steps and writing
+advice are in [docs/SEO.md](docs/SEO.md).
+
 ## Security & accessibility notes
 
 - Everything under `/admin` and every mutating or admin-only API route is gated by

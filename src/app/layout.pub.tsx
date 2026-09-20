@@ -6,6 +6,9 @@ import { Providers } from "@/components/providers";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
 import { SiteProvider } from "@/components/SiteProvider";
 import { getSite, siteTitle } from "@/lib/site";
+import { getBio } from "@/lib/bio";
+import { JsonLd } from "@/components/site/JsonLd";
+import { graph, personJsonLd, websiteJsonLd } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,6 +41,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: title, template: `%s — ${site.name}` },
     // No Referer to other origins: objkt's media CDN refuses hotlinked requests that carry one
     referrer: 'same-origin',
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
+    alternates: { canonical: '/' },
     description: site.description,
     keywords: site.keywords.length ? site.keywords : undefined,
     authors: site.author ? [{ name: site.author }] : undefined,
@@ -72,13 +77,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const site = await getSite();
+  const [site, bio] = await Promise.all([getSite(), getBio()]);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${geistMono.variable} min-h-dvh flex flex-col bg-background text-foreground font-sans antialiased`}>
         <a href="#content" className="skip-link t-label">
           Skip to content
         </a>
+        <JsonLd data={graph(websiteJsonLd(site), personJsonLd(site, bio))} />
         <SiteProvider site={site}>
           <Providers>
             {children}

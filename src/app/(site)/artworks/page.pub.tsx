@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
+import { getSite } from '@/lib/site';
+import { pageMeta } from '@/lib/seo';
 import { getPublishedProjects } from '@/lib/content';
 import { ArtworkGrid } from '@/components/site/ArtworkGrid';
 import { PageIntro } from '@/components/site/PageIntro';
 
-export const metadata: Metadata = { title: 'Artworks' };
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  return pageMeta(site, '/artworks/', { title: 'Artworks', description: `Collections, series and single works by ${site.author || site.name} — architecture fiction and generative art minted on Tezos.` });
+}
 
 export default async function ArtworksPage() {
   const projects = await getPublishedProjects('artworks');
