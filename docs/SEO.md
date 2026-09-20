@@ -27,12 +27,11 @@ need your Google/Bing accounts.
    too long or too short" and "H1 tag missing" on 2026-09-21. The first two were real and are
    fixed (see table above); the H1 one was a stale crawl — every page has exactly one `<h1>`.
    Click **Request indexing** after a deploy to refresh Bing's snapshot.
-2. **Google Search Console** — https://search.google.com/search-console → *Add property* →
-   **Domain** `urbandrone.xyz` → Google gives a `TXT` record → add it in Netlify DNS
-   (Domains → urbandrone.xyz → DNS settings → *Add new record*, type **TXT**, name **empty**
-   (bare domain, not `www`), value = the `google-site-verification=…` string). Verify (retry
-   after a few minutes if it does not find the record yet). Then *Sitemaps* → submit
-   `https://urbandrone.xyz/sitemap.xml`.
+2. **Google Search Console** — **done** (2026-09-21): Domain property `urbandrone.xyz`,
+   verified by a `TXT google-site-verification=…` record in Netlify DNS (bare domain, name
+   empty). **Keep that record forever** — Google re-checks it. Sitemap submitted.
+   (Redo if ever needed: *Add property → Domain* → TXT record in Netlify DNS → Verify →
+   *Sitemaps* → `https://urbandrone.xyz/sitemap.xml`.)
    **Known quirk:** a freshly submitted sitemap shows *"Impossible de récupérer le sitemap"*
    with an empty *Dernière lecture* for hours or days — Google simply has not fetched it yet.
    Do not delete/resubmit; use *URL inspection → Request indexing* on the home page and wait.
