@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { hasAdminUser } from '@/lib/admin-user';
 import { AdminView } from '@/components/admin/AdminView';
 
 export const metadata: Metadata = {
@@ -8,6 +10,7 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  if (!(await hasAdminUser())) redirect('/admin/setup');
   return <AdminView />;
 }

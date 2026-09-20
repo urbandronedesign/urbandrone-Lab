@@ -14,7 +14,8 @@ export async function proxy(req: NextRequest) {
   if (pathname.startsWith('/api/auth/')) return NextResponse.next();
 
   const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/');
-  const isLoginPage = pathname === '/admin/login';
+  // Pages reachable without a session: sign-in, first-run setup, password reset
+  const isLoginPage = ['/admin/login', '/admin/setup', '/admin/forgot', '/admin/reset'].includes(pathname);
   // Reads stay public (the gallery needs them); anything that changes data,
   // the unpublished listing and the admin-only token/sync endpoints require a session.
   const isProtectedApi =
@@ -27,8 +28,7 @@ export async function proxy(req: NextRequest) {
   if (!isAdminPage && !isProtectedApi) return NextResponse.next();
 
   if (!authConfigured()) {
-    const msg =
-      'Admin is not configured. Set ADMIN_USER, ADMIN_PASSWORD and AUTH_SECRET (32+ chars) in .env.';
+    const msg = 'Admin is not configured. Set AUTH_SECRET (32+ random chars) in .env.';
     return isAdminPage
       ? new NextResponse(msg, { status: 503 })
       : NextResponse.json({ error: msg }, { status: 503 });
@@ -37,7 +37,8 @@ export async function proxy(req: NextRequest) {
   const authed = await verifySessionToken(req.cookies.get(SESSION_COOKIE)?.value);
 
   if (isLoginPage) {
-    return authed ? NextResponse.redirect(new URL('/admin', req.url)) : NextResponse.next();
+    // Signed-in users skip the sign-in page; the others (setup/forgot/reset) are always reachable
+    return authed && pathname === '/admin/login' ? NextResponse.redirect(new URL('/admin', req.url)) : NextResponse.next();
   }
   if (authed) return NextResponse.next();
 

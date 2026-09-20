@@ -32,7 +32,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut, Hexagon } from 'lucide-react';
+import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut, Hexagon, UserRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/gallery/Footer';
@@ -246,6 +246,12 @@ export function AdminView() {
                 <Link href="/">
                   <ArrowLeft className="mr-2 h-3.5 w-3.5" />
                   Back to gallery
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild title="Account settings">
+                <Link href="/admin/account">
+                  <UserRound className="mr-2 h-3.5 w-3.5" />
+                  Account
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" onClick={signOut} title="Sign out">

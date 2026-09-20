@@ -62,8 +62,49 @@ cp .env.example .env       # then set ADMIN_PASSWORD and AUTH_SECRET
 
 - `TEZOS_WALLETS` — minting wallets to sync, comma-separated
 - `DATABASE_URL` — `file:../db/custom.db` (relative to `prisma/`)
-- `ADMIN_USER`, `ADMIN_PASSWORD` — admin sign-in at `/admin`
 - `AUTH_SECRET` — 32+ random chars; signs the admin session cookie
+- `SMTP_*`, `MAIL_FROM` — optional, for password-reset emails (below)
+
+## Admin account
+
+Accounts live in the database (scrypt-hashed passwords), not in `.env`.
+
+- **First run**: opening `/admin` with no account redirects to `/admin/setup` —
+  choose a username, an email (used only for resets) and a password (10+ chars).
+- **Change username / email / password**: admin header → **Account**. The current
+  password is required for any change.
+- **Forgot password**: sign-in page → *Forgot password?* → enter email or username.
+  A single-use link (valid 30 min) is emailed; open it to set a new password.
+  Without a mail server the link is **printed in the terminal running `npm run dev`**
+  (line starting with `[mail]`) — you are on your own machine, so that is safe.
+- Sign-in, forgot and reset endpoints are rate-limited per IP.
+
+### Email for reset links (optional)
+
+Any SMTP server works. Gmail example:
+
+1. Google Account → Security → 2-Step Verification (must be on) → **App passwords**
+   → create one named "Atelier" → copy the 16-character password.
+2. In `.env`:
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=you@gmail.com
+   SMTP_PASS=abcd efgh ijkl mnop
+   MAIL_FROM=Atelier <you@gmail.com>
+   ```
+3. Restart the dev server. The Account page shows whether mail is configured.
+
+OVH mail works the same with `SMTP_HOST=ssl0.ovh.net`, `SMTP_PORT=465`.
+
+### Locked out completely?
+
+You have the machine, so you always have a way back in: stop the dev server,
+delete the account row and start over at `/admin/setup`:
+
+```sh
+node -e "const {PrismaClient}=require('@prisma/client');const db=new PrismaClient();db.adminUser.deleteMany().then(()=>db.$disconnect())"
+```
 
 ## Domain / GitHub Pages
 

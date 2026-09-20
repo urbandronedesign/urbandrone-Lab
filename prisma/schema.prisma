@@ -101,3 +101,27 @@ model Image {
 
   @@index([projectId])
 }
+
+// Admin sign-in. A single account is expected, but nothing prevents more.
+model AdminUser {
+  id           String          @id @default(cuid())
+  username     String          @unique
+  email        String          @unique
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  resets       PasswordReset[]
+}
+
+// Single-use, time-limited password reset links (only the hash is stored).
+model PasswordReset {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}

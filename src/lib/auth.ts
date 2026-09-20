@@ -1,6 +1,8 @@
-// Admin authentication helpers.
+// Admin session helpers.
 // Shared by proxy.ts (runs in front of every request) and the /api/auth routes,
-// so only Web Crypto is used — no Node-only modules.
+// so only Web Crypto is used — no Node-only modules. Accounts and passwords
+// live in the database (see admin-user.ts); this file only signs/verifies the
+// session cookie.
 
 export const SESSION_COOKIE = 'atelier_admin';
 const SESSION_TTL_S = 60 * 60 * 24 * 7; // 7 days
@@ -13,13 +15,9 @@ function env(name: string): string | undefined {
   return v ? v : undefined;
 }
 
-/** True when ADMIN_USER, ADMIN_PASSWORD and a sufficiently long AUTH_SECRET are all set. */
+/** True when a sufficiently long AUTH_SECRET is set (needed to sign sessions). */
 export function authConfigured(): boolean {
-  return !!(
-    env('ADMIN_USER') &&
-    env('ADMIN_PASSWORD') &&
-    (env('AUTH_SECRET')?.length ?? 0) >= MIN_SECRET_LENGTH
-  );
+  return (env('AUTH_SECRET')?.length ?? 0) >= MIN_SECRET_LENGTH;
 }
 
 function b64url(buf: ArrayBuffer): string {
@@ -52,15 +50,6 @@ async function safeEqual(a: string, b: string): Promise<boolean> {
   let diff = 0;
   for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
   return diff === 0;
-}
-
-export async function checkCredentials(username: string, password: string): Promise<boolean> {
-  if (!authConfigured()) return false;
-  const [u, p] = await Promise.all([
-    safeEqual(username, env('ADMIN_USER')!),
-    safeEqual(password, env('ADMIN_PASSWORD')!),
-  ]);
-  return u && p;
 }
 
 /** Token format: `<expiry unix seconds>.<hmac>` */
