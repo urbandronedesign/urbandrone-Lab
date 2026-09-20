@@ -89,6 +89,8 @@ and **Traffic** once GoatCounter is connected. Projects live at `/admin/projects
 
 ### Analytics — GoatCounter (free, no cookies, no consent bar)
 
+Step-by-step: [docs/ANALYTICS-SETUP.md](docs/ANALYTICS-SETUP.md).
+
 1. Create a free account at goatcounter.com (personal, non-commercial use) and pick a
    site code; paste it into *Site → Analytics* and publish. The public site loads
    GoatCounter's counter script — it sets no cookies and stores no personal data, so
