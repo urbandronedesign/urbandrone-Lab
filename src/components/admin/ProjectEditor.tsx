@@ -166,7 +166,7 @@ function Editor({ project }: { project: Project | null }) {
     const year = parseInt(form.year, 10);
     if (isNaN(year) || year < 1900 || year > 2100) return toast.error('Enter a valid year');
     if (!form.category.trim()) return toast.error('Category is required');
-    if (form.section === 'artworks' && images.length === 0 && tokens.length === 0) return toast.error('Add at least one image or token');
+    if (form.section !== 'lab' && images.length === 0 && tokens.length === 0) return toast.error('Add at least one image or token');
 
     const payload = {
       title: form.title.trim(),
@@ -222,7 +222,7 @@ function Editor({ project }: { project: Project | null }) {
             <div className="min-w-0">
               <p className="truncate font-display text-xl italic leading-tight">{form.title || (isEdit ? 'Untitled' : 'New project')}</p>
               <p className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                {form.section === 'lab' ? 'lab' : 'artworks'} · {locked ? 'contract collection' : isEdit ? 'project' : 'draft'}
+                {form.section} · {locked ? 'contract collection' : isEdit ? 'project' : 'draft'}
                 {dirty && <span className="ml-2 text-foreground">· unsaved changes</span>}
               </p>
             </div>
@@ -262,6 +262,7 @@ function Editor({ project }: { project: Project | null }) {
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="artworks">Artworks</option>
+                <option value="collabs">Collabs</option>
                 <option value="lab">Lab</option>
               </select>
             </div>

@@ -253,6 +253,7 @@ export function Dashboard() {
           <Card title="Content" aside={<Link href="/admin/projects" className="tracking-mono text-[10px] text-muted-foreground hover:text-foreground">manage →</Link>} className="lg:col-span-2">
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               <Tile label="artworks" value={c.projects.artworks} />
+              <Tile label="collabs" value={c.projects.collabs} />
               <Tile label="lab entries" value={c.projects.lab} />
               <Tile label="published" value={c.projects.published} hint={`${c.projects.drafts} draft${c.projects.drafts === 1 ? '' : 's'}`} />
               <Tile label="featured on home" value={c.projects.featured} />

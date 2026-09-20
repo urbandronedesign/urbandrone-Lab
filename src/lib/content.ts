@@ -11,7 +11,7 @@ export async function getPublishedProjects(section?: ProjectSection): Promise<Pr
       orderBy: { order: 'asc' },
       include: projectInclude,
     });
-    // Artworks need something to show; lab entries may be text only.
+    // Artworks and collabs need something to show; lab entries may be text only.
     return raw.map(serializeProject).filter((p) => p.section === 'lab' || p.media.length > 0);
   } catch (e) {
     console.error('getPublishedProjects failed', e);

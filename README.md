@@ -26,9 +26,10 @@ public gallery and deploys it to Pages. Content is versioned in git:
 |---|---|
 | `/` | Home: name, tagline, description, selected works (featured or first 6), latest lab entries, about + links |
 | `/artworks/` · `/artworks/<slug>/` | Gallery of artwork projects; detail = uncropped hero, title/description/facts, mosaic, lightbox |
+| `/collabs/` · `/collabs/<slug>/` | Collaborations — same gallery treatment as artworks |
 | `/lab/` · `/lab/<slug>/` | Experiments, research, tools — text-forward list; detail leads with text, media optional |
 
-Every project has a **section** (Artworks / Lab), a **slug** (URL), **tags**, external
+Every project has a **section** (Artworks / Collabs / Lab), a **slug** (URL), **tags**, external
 **links** and a **featured** flag, all editable in the project editor. The design
 system (tokens, type roles, components, media rules) is documented in
 [design-system/urbandrone/MASTER.md](design-system/urbandrone/MASTER.md); light and

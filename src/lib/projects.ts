@@ -14,7 +14,7 @@ export type ProjectBody = {
   imageIds?: string[];
   tokenIds?: string[];
   order?: number;
-  section?: 'artworks' | 'lab';
+  section?: 'artworks' | 'lab' | 'collabs';
   slug?: string;
   featured?: boolean;
   tags?: string[];
@@ -46,7 +46,7 @@ export async function uniqueSlug(base: string, excludeId?: string): Promise<stri
 /** The optional presentation fields, normalised for Prisma. */
 export function presentationFields(body: ProjectBody) {
   return {
-    ...(body.section !== undefined ? { section: body.section === 'lab' ? 'lab' : 'artworks' } : {}),
+    ...(body.section !== undefined ? { section: body.section === 'lab' || body.section === 'collabs' ? body.section : 'artworks' } : {}),
     ...(body.featured !== undefined ? { featured: !!body.featured } : {}),
     ...(body.tags !== undefined ? { tags: body.tags.map((t) => t.trim()).filter(Boolean).join(',') } : {}),
     ...(body.links !== undefined

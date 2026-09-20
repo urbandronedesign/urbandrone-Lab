@@ -117,7 +117,7 @@ export function serializeProject(p: RawProject): Project {
     description: p.description,
     credits: p.credits,
     source: p.source === 'contract' ? 'contract' : 'manual',
-    section: p.section === 'lab' ? 'lab' : 'artworks',
+    section: p.section === 'lab' || p.section === 'collabs' ? p.section : 'artworks',
     slug: p.slug ?? p.id,
     featured: p.featured,
     tags: p.tags ? p.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],

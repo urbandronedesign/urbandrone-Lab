@@ -152,7 +152,7 @@ export function AdminView() {
 
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
   const [tab, setTab] = useState<'projects' | 'tokens'>('projects');
-  const [sectionFilter, setSectionFilter] = useState<'all' | 'artworks' | 'lab'>('all');
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'artworks' | 'lab' | 'collabs'>('all');
   const sync = useSyncProgress();
   const startSync = useStartSync();
   const progress = sync.data?.progress;
@@ -244,9 +244,10 @@ export function AdminView() {
           </TabsList>
           <span className="flex items-center gap-3 tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
             {tab === 'projects' && (
-              <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as 'all' | 'artworks' | 'lab')} className="h-7 rounded-md border border-input bg-background px-2 text-[10px] uppercase tracking-[0.2em]">
+              <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as 'all' | 'artworks' | 'lab' | 'collabs')} className="h-7 rounded-md border border-input bg-background px-2 text-[10px] uppercase tracking-[0.2em]">
                 <option value="all">All sections</option>
                 <option value="artworks">Artworks</option>
+                <option value="collabs">Collabs</option>
                 <option value="lab">Lab</option>
               </select>
             )}

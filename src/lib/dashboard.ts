@@ -14,7 +14,7 @@ const ROOT = process.cwd();
 
 // ---------------------------------------------------------------- content
 export type ContentStats = {
-  projects: { total: number; published: number; drafts: number; featured: number; artworks: number; lab: number };
+  projects: { total: number; published: number; drafts: number; featured: number; artworks: number; lab: number; collabs: number };
   tokens: { total: number; hidden: number; withMedia: number; images: number; videos: number; other: number; contracts: number };
   uploads: number;
   mediaBytes: number;
@@ -58,6 +58,7 @@ export async function contentStats(): Promise<ContentStats> {
       featured: projects.filter((p) => p.featured).length,
       artworks: projects.filter((p) => p.section === 'artworks').length,
       lab: projects.filter((p) => p.section === 'lab').length,
+      collabs: projects.filter((p) => p.section === 'collabs').length,
     },
     tokens: {
       total: tokens.length,

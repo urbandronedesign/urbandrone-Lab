@@ -8,7 +8,7 @@ import { Prose } from '@/components/site/Prose';
 
 // Rendered once at build time for the static export.
 export default async function HomePage() {
-  const [site, artworks, lab] = await Promise.all([getSite(), getPublishedProjects('artworks'), getPublishedProjects('lab')]);
+  const [site, artworks, lab, collabs] = await Promise.all([getSite(), getPublishedProjects('artworks'), getPublishedProjects('lab'), getPublishedProjects('collabs')]);
   const featured = pickFeatured(artworks, 6);
 
   return (
@@ -38,6 +38,19 @@ export default async function HomePage() {
             </Link>
           </div>
           <ArtworkGrid projects={featured} />
+        </section>
+      )}
+
+      {/* Collabs */}
+      {collabs.length > 0 && (
+        <section className="gutter mx-auto w-full max-w-[1600px] pb-16 md:pb-24" aria-labelledby="collabs">
+          <div className="mb-6 flex items-baseline justify-between border-t border-border pt-6">
+            <h2 id="collabs" className="t-label text-muted-foreground">Collabs</h2>
+            <Link href="/collabs/" className="t-label cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
+              All collabs · {collabs.length}
+            </Link>
+          </div>
+          <ArtworkGrid projects={collabs.slice(0, 5)} base="/collabs/" />
         </section>
       )}
 

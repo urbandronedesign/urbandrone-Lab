@@ -43,7 +43,7 @@ export type ProjectInput = {
   imageIds?: string[];
   tokenIds?: string[];
   order?: number;
-  section?: 'artworks' | 'lab';
+  section?: 'artworks' | 'lab' | 'collabs';
   slug?: string;
   featured?: boolean;
   tags?: string[];

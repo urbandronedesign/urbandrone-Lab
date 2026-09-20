@@ -54,7 +54,12 @@ export type Token = {
 };
 
 export type ProjectSource = 'manual' | 'contract';
-export type ProjectSection = 'artworks' | 'lab';
+export type ProjectSection = 'artworks' | 'lab' | 'collabs';
+export const SECTIONS: { id: ProjectSection; label: string; base: string }[] = [
+  { id: 'artworks', label: 'Artworks', base: '/artworks/' },
+  { id: 'collabs', label: 'Collabs', base: '/collabs/' },
+  { id: 'lab', label: 'Lab', base: '/lab/' },
+];
 export type ProjectLink = { label: string; url: string };
 
 export type Project = {
