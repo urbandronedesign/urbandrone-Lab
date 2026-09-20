@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
+import { SiteProvider } from "@/components/SiteProvider";
+import { getSite, siteTitle } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,41 +25,59 @@ const playfair = Playfair_Display({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
-  title: "Atelier — A Project Gallery",
-  description:
-    "A minimal, fullscreen-image-first template for showcasing graphical projects. Built with Next.js, Prisma, and shadcn/ui.",
-  keywords: ["portfolio", "gallery", "atelier", "minimal", "fullscreen", "Next.js"],
-  authors: [{ name: "Atelier" }],
-  icons: {
-    icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: "/apple-icon.png",
-  },
-  openGraph: {
-    title: "Atelier — A Project Gallery",
-    description: "A minimal, fullscreen-image-first template for showcasing graphical projects.",
-    type: "website",
-  },
-};
+// Site name, description etc. come from the database (edited at /admin/site).
+// In the static export this runs once at build time.
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  const title = siteTitle(site);
+  return {
+    title,
+    description: site.description,
+    keywords: site.keywords.length ? site.keywords : undefined,
+    authors: site.author ? [{ name: site.author }] : undefined,
+    metadataBase: site.url ? new URL(site.url) : undefined,
+    icons: {
+      icon: [
+        { url: "/logo.svg", type: "image/svg+xml" },
+        { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: "/apple-icon.png",
+    },
+    openGraph: {
+      title,
+      description: site.description,
+      type: "website",
+      siteName: site.name,
+      url: site.url || undefined,
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: site.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: site.description,
+      images: ["/og.png"],
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const site = await getSite();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased bg-background text-foreground font-sans`}
       >
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+        <SiteProvider site={site}>
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
+        </SiteProvider>
         <RegisterServiceWorker />
       </body>
     </html>

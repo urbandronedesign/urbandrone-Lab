@@ -125,3 +125,18 @@ model PasswordReset {
 
   @@index([userId])
 }
+
+// Site-wide information edited in the admin (single row, id = "site").
+model Site {
+  id          String   @id @default("site")
+  name        String   @default("Atelier")
+  tagline     String   @default("A Project Gallery")
+  description String   @default("")
+  author      String   @default("")
+  copyright   String   @default("") // footer holder; falls back to name
+  email       String   @default("")
+  url         String   @default("")
+  keywords    String   @default("") // comma-separated
+  linksJson   String   @default("[]") // [{ label, url }]
+  updatedAt   DateTime @updatedAt
+}

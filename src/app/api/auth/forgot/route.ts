@@ -3,6 +3,7 @@ import { createResetToken } from '@/lib/admin-user';
 import { isHttps } from '@/lib/auth';
 import { mailConfigured, passwordResetMail, sendMail } from '@/lib/mailer';
 import { clientIp, throttled } from '@/lib/throttle';
+import { getSite } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       // Build the link from the request so it matches how the admin is being reached
       const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000';
       const link = `${isHttps(req) ? 'https' : 'http'}://${host}/admin/reset?token=${reset.token}`;
-      const mail = passwordResetMail(reset.username, link);
+      const mail = passwordResetMail(reset.username, link, (await getSite()).name);
       await sendMail({ to: reset.email, ...mail });
     }
     // Same response whether or not the account exists

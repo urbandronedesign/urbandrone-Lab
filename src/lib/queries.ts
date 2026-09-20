@@ -138,22 +138,6 @@ export function useUploadImage() {
   });
 }
 
-export function useSeedProjects() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (reset: boolean) =>
-      jsonOrThrow<{ ok: boolean; created?: number; skipped?: boolean }>(
-        fetch(`${BASE}/api/seed`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ reset }),
-        })
-      ),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['projects'] });
-    },
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Tezos tokens (admin only)

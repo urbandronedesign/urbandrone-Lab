@@ -41,19 +41,19 @@ export async function sendMail(opts: { to: string; subject: string; text: string
   }
 }
 
-export function passwordResetMail(username: string, link: string) {
+export function passwordResetMail(username: string, link: string, siteName = 'Atelier') {
   const text = `Hello ${username},
 
-Someone (hopefully you) asked to reset the Atelier admin password.
+Someone (hopefully you) asked to reset the ${siteName} admin password.
 Open this link within 30 minutes to choose a new one:
 
 ${link}
 
 If you did not request this, ignore this message — the link will expire.`;
   const html = `<p>Hello ${username},</p>
-<p>Someone (hopefully you) asked to reset the Atelier admin password.<br>
+<p>Someone (hopefully you) asked to reset the ${siteName} admin password.<br>
 Open this link within 30 minutes to choose a new one:</p>
 <p><a href="${link}">${link}</a></p>
 <p style="color:#666">If you did not request this, ignore this message — the link will expire.</p>`;
-  return { subject: 'Atelier admin — reset your password', text, html };
+  return { subject: `${siteName} admin — reset your password`, text, html };
 }

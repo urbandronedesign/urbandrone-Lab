@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { useRouter } from 'next/navigation';
-import { useProjects, useDeleteProject, useReorderProjects, useSeedProjects, useStartSync, useSyncProgress } from '@/lib/queries';
+import { useProjects, useDeleteProject, useReorderProjects, useStartSync, useSyncProgress } from '@/lib/queries';
+import { useSite } from '@/components/SiteProvider';
 import { TokenPool } from './TokenPool';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Sparkles, Loader2, RefreshCw, LogOut, Hexagon, UserRound } from 'lucide-react';
+import { Plus, Trash2, Pencil, GripVertical, ArrowLeft, Loader2, LogOut, Hexagon, UserRound, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/gallery/Footer';
@@ -141,11 +142,10 @@ export function AdminView() {
   const { data, isLoading, error } = useProjects(true);
   const del = useDeleteProject();
   const reorder = useReorderProjects();
-  const seed = useSeedProjects();
+  const site = useSite();
   const update = useUpdateProject();
 
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
-  const [confirmSeed, setConfirmSeed] = useState(false);
   const [tab, setTab] = useState<'projects' | 'tokens'>('projects');
   const sync = useSyncProgress();
   const startSync = useStartSync();
@@ -216,7 +216,7 @@ export function AdminView() {
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Logo className="h-6 w-6" />
-              <h1 className="font-display text-2xl italic">Atelier</h1>
+              <h1 className="font-display text-2xl italic">{site.name}</h1>
               <span className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                 · Admin
               </span>
@@ -233,19 +233,16 @@ export function AdminView() {
                 {syncing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Hexagon className="mr-2 h-3.5 w-3.5" />}
                 {syncLabel}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setConfirmSeed(true)}
-                disabled={seed.isPending}
-              >
-                {seed.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-2 h-3.5 w-3.5" />}
-                Seed demo
-              </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link href="/">
                   <ArrowLeft className="mr-2 h-3.5 w-3.5" />
                   Back to gallery
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild title="Site information">
+                <Link href="/admin/site">
+                  <Settings2 className="mr-2 h-3.5 w-3.5" />
+                  Site
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" asChild title="Account settings">
@@ -382,34 +379,6 @@ export function AdminView() {
         </DialogContent>
       </Dialog>
 
-      {/* Seed confirm */}
-      <Dialog open={confirmSeed} onOpenChange={setConfirmSeed}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl italic">Seed demo content?</DialogTitle>
-            <DialogDescription>
-              This will <strong>erase all current projects and images</strong> and replace them with the curated demo collection (4 projects, ~17 images). Useful for restarting the template.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setConfirmSeed(false)}>Cancel</Button>
-            <Button
-              onClick={async () => {
-                try {
-                  const r = await seed.mutateAsync(true);
-                  toast.success(`Seeded ${r.created ?? 0} projects`);
-                  setConfirmSeed(false);
-                } catch (e: any) {
-                  toast.error('Seed failed', { description: e?.message });
-                }
-              }}
-            >
-              <RefreshCw className="mr-2 h-3.5 w-3.5" />
-              Reset & seed
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 }
