@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import { getBio, groupCv } from '@/lib/bio';
 import { getSite } from '@/lib/site';
-import { Prose } from '@/components/site/Prose';
+import { BioText } from '@/components/site/BioText';
 
 export const metadata: Metadata = { title: 'Bio' };
 
@@ -33,13 +33,11 @@ export default async function BioPage() {
         )}
 
         <div className={bio.portrait ? 'md:col-span-7 md:col-start-6 xl:col-span-6 xl:col-start-5' : 'md:col-span-8 xl:col-span-7'}>
-          <p className="t-label text-muted-foreground">Biography</p>
-          <h1 className="t-h1 mt-3">{headline}</h1>
-          {bio.text ? (
-            <Prose text={bio.text} className="t-lead mt-8 max-w-[62ch] text-foreground/90" />
-          ) : (
-            <p className="t-lead mt-8 text-muted-foreground">{site.description}</p>
-          )}
+          <BioText
+            en={{ headline, text: bio.text }}
+            fr={bio.textFr ? { headline: bio.headlineFr || headline, text: bio.textFr } : null}
+            fallback={site.description}
+          />
           {(site.email || site.links.length > 0) && (
             <ul className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
               {site.email && (

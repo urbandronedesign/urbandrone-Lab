@@ -11,7 +11,7 @@ export async function GET() {
 /** Admin only (proxy.ts guards PUT). Body: { headline?, text?, portraitId?, cv? } */
 export async function PUT(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => ({}))) as { headline?: unknown; text?: unknown; portraitId?: unknown; cv?: unknown };
+    const body = (await req.json().catch(() => ({}))) as { headline?: unknown; text?: unknown; headlineFr?: unknown; textFr?: unknown; portraitId?: unknown; cv?: unknown };
     const input: Parameters<typeof saveBio>[0] = {};
     if (body.headline !== undefined) {
       if (typeof body.headline !== 'string') return NextResponse.json({ error: 'headline must be text' }, { status: 400 });
@@ -20,6 +20,12 @@ export async function PUT(req: NextRequest) {
     if (body.text !== undefined) {
       if (typeof body.text !== 'string') return NextResponse.json({ error: 'text must be text' }, { status: 400 });
       input.text = body.text;
+    }
+    for (const k of ['headlineFr', 'textFr'] as const) {
+      if (body[k] !== undefined) {
+        if (typeof body[k] !== 'string') return NextResponse.json({ error: `${k} must be text` }, { status: 400 });
+        input[k] = body[k] as string;
+      }
     }
     if (body.portraitId !== undefined) {
       if (body.portraitId !== null && typeof body.portraitId !== 'string') return NextResponse.json({ error: 'portraitId invalid' }, { status: 400 });

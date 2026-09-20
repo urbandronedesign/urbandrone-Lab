@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Logo } from '@/components/Logo';
 
-type Draft = { headline: string; text: string; portrait: ImageInfo | null; cv: CvEntry[] };
+type Draft = { headline: string; text: string; headlineFr: string; textFr: string; portrait: ImageInfo | null; cv: CvEntry[] };
 
 const snap = (d: Draft) => JSON.stringify({ ...d, portrait: d.portrait?.id ?? null });
 
@@ -23,8 +23,9 @@ export function BioForm({ bio }: { bio: BioInfo }) {
   const router = useRouter();
   const upload = useUploadImage();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState<Draft>({ headline: bio.headline, text: bio.text, portrait: bio.portrait, cv: bio.cv });
-  const [saved, setSaved] = useState(() => snap({ headline: bio.headline, text: bio.text, portrait: bio.portrait, cv: bio.cv }));
+  const initial: Draft = { headline: bio.headline, text: bio.text, headlineFr: bio.headlineFr, textFr: bio.textFr, portrait: bio.portrait, cv: bio.cv };
+  const [draft, setDraft] = useState<Draft>(initial);
+  const [saved, setSaved] = useState(() => snap(initial));
   const [pending, setPending] = useState(false);
   const dirty = snap(draft) !== saved;
 
@@ -61,12 +62,12 @@ export function BioForm({ bio }: { bio: BioInfo }) {
       const res = await fetch('/api/bio', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ headline: draft.headline, text: draft.text, portraitId: draft.portrait?.id ?? null, cv: draft.cv.filter((e) => e.text.trim()) }),
+        body: JSON.stringify({ headline: draft.headline, text: draft.text, headlineFr: draft.headlineFr, textFr: draft.textFr, portraitId: draft.portrait?.id ?? null, cv: draft.cv.filter((e) => e.text.trim()) }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error ?? 'Save failed');
       const b = body.bio as BioInfo;
-      const next: Draft = { headline: b.headline, text: b.text, portrait: b.portrait, cv: b.cv };
+      const next: Draft = { headline: b.headline, text: b.text, headlineFr: b.headlineFr, textFr: b.textFr, portrait: b.portrait, cv: b.cv };
       setDraft(next);
       setSaved(snap(next));
       toast.success('Bio saved', { description: 'Commit and push to publish it.' });
@@ -180,6 +181,28 @@ export function BioForm({ bio }: { bio: BioInfo }) {
               <span className="tracking-mono text-[10px] text-muted-foreground">{draft.text.length} chars</span>
             </div>
             <Textarea id="b-text" value={draft.text} onChange={(e) => set('text', e.target.value)} className="min-h-[40vh] resize-y text-base leading-relaxed" placeholder="Who you are, what you make, where you come from. Blank lines start new paragraphs; URLs become links." />
+          </div>
+
+          <div className="space-y-5 border-t border-border pt-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em]">Version française</p>
+              <p className="text-[10px] text-muted-foreground tracking-mono">Optional. When filled in, the page shows an EN / FR switch.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="b-headline-fr" className="text-xs uppercase tracking-[0.2em]">
+                Titre
+              </Label>
+              <Input id="b-headline-fr" value={draft.headlineFr} onChange={(e) => set('headlineFr', e.target.value)} placeholder="Architecte, fondateur d’Urbandrone" className="font-display text-xl h-11" lang="fr" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-baseline justify-between">
+                <Label htmlFor="b-text-fr" className="text-xs uppercase tracking-[0.2em]">
+                  Biographie
+                </Label>
+                <span className="tracking-mono text-[10px] text-muted-foreground">{draft.textFr.length} chars</span>
+              </div>
+              <Textarea id="b-text-fr" value={draft.textFr} onChange={(e) => set('textFr', e.target.value)} className="min-h-[30vh] resize-y text-base leading-relaxed" lang="fr" />
+            </div>
           </div>
         </section>
 

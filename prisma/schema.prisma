@@ -155,6 +155,9 @@ model Bio {
   id         String   @id @default("bio")
   headline   String   @default("")
   text       String   @default("")
+  // Optional French version (the page shows an EN / FR switch when present)
+  headlineFr String   @default("")
+  textFr     String   @default("")
   portraitId String?
   portrait   Image?   @relation("BioPortrait", fields: [portraitId], references: [id], onDelete: SetNull)
   cvJson     String   @default("[]")

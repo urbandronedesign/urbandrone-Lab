@@ -8,14 +8,16 @@ export type CvEntry = { group: string; year: string; text: string; url: string }
 export type BioInfo = {
   headline: string;
   text: string;
+  headlineFr: string;
+  textFr: string;
   portrait: Image | null;
   cv: CvEntry[];
 };
 
-export const DEFAULT_BIO: BioInfo = { headline: '', text: '', portrait: null, cv: [] };
+export const DEFAULT_BIO: BioInfo = { headline: '', text: '', headlineFr: '', textFr: '', portrait: null, cv: [] };
 
 /** Suggested CV groups, in display order; unknown groups follow alphabetically. */
-export const CV_GROUPS = ['Exhibitions', 'Awards', 'Talks & workshops', 'Teaching', 'Press', 'Education', 'Collections'];
+export const CV_GROUPS = ['Practice', 'Exhibitions', 'Awards', 'Talks & workshops', 'Teaching', 'Press', 'Education', 'Collections', 'Tools'];
 
 export function parseCv(json: string): CvEntry[] {
   try {
@@ -54,6 +56,8 @@ export async function getBio(): Promise<BioInfo> {
     return {
       headline: row.headline,
       text: row.text,
+      headlineFr: row.headlineFr,
+      textFr: row.textFr,
       portrait: row.portrait
         ? { id: row.portrait.id, url: row.portrait.url, width: row.portrait.width, height: row.portrait.height, alt: row.portrait.alt }
         : null,
@@ -65,10 +69,12 @@ export async function getBio(): Promise<BioInfo> {
   }
 }
 
-export async function saveBio(input: { headline?: string; text?: string; portraitId?: string | null; cv?: CvEntry[] }): Promise<BioInfo> {
+export async function saveBio(input: { headline?: string; text?: string; headlineFr?: string; textFr?: string; portraitId?: string | null; cv?: CvEntry[] }): Promise<BioInfo> {
   const data = {
     ...(input.headline !== undefined ? { headline: input.headline.trim() } : {}),
     ...(input.text !== undefined ? { text: input.text.trim() } : {}),
+    ...(input.headlineFr !== undefined ? { headlineFr: input.headlineFr.trim() } : {}),
+    ...(input.textFr !== undefined ? { textFr: input.textFr.trim() } : {}),
     ...(input.portraitId !== undefined ? { portraitId: input.portraitId || null } : {}),
     ...(input.cv !== undefined ? { cvJson: JSON.stringify(parseCv(JSON.stringify(input.cv))) } : {}),
   };
