@@ -24,7 +24,7 @@ public gallery and deploys it to Pages. Content is versioned in git:
 
 | URL | Content |
 |---|---|
-| `/` | Home: name, tagline, description, selected works (featured or first 6), latest lab entries, about + links |
+| `/` | Home: name, tagline, description, **4 featured projects** (Projects → *Featured on the home page*; first artworks until you choose), collabs and lab teasers, about + links |
 | `/artworks/` · `/artworks/<slug>/` | Gallery of artwork projects; detail = uncropped hero, title/description/facts, mosaic, lightbox |
 | `/collabs/` · `/collabs/<slug>/` | Collaborations — same gallery treatment as artworks |
 | `/lab/` · `/lab/<slug>/` | Experiments, research, tools — text-forward list; detail leads with text, media optional |

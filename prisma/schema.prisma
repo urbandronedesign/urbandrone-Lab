@@ -28,6 +28,7 @@ model Project {
   section      String         @default("artworks")
   slug         String?        @unique
   featured     Boolean        @default(false) // shown on the home page
+  featuredOrder Int           @default(0) // position among the featured projects
   tags         String         @default("") // comma-separated
   linksJson    String         @default("[]") // external links [{ label, url }]
   contract     String?        @unique

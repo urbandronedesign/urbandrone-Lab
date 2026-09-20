@@ -28,8 +28,11 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 
-/** Featured artworks for the home page, falling back to the first ones. */
-export function pickFeatured(projects: Project[], n = 6): Project[] {
-  const featured = projects.filter((p) => p.featured);
+/** How many projects the home page features. */
+export const HOME_FEATURED = 4;
+
+/** Featured projects in their chosen order, falling back to the first artworks. */
+export function pickFeatured(projects: Project[], n = HOME_FEATURED): Project[] {
+  const featured = projects.filter((p) => p.featured).sort((a, b) => a.featuredOrder - b.featuredOrder);
   return (featured.length ? featured : projects).slice(0, n);
 }

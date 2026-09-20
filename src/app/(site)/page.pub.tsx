@@ -9,7 +9,8 @@ import { Prose } from '@/components/site/Prose';
 // Rendered once at build time for the static export.
 export default async function HomePage() {
   const [site, artworks, lab, collabs] = await Promise.all([getSite(), getPublishedProjects('artworks'), getPublishedProjects('lab'), getPublishedProjects('collabs')]);
-  const featured = pickFeatured(artworks, 6);
+  // Featured picks may come from artworks or collabs; falls back to the first artworks
+  const featured = pickFeatured([...artworks, ...collabs]);
 
   return (
     <>
@@ -37,7 +38,7 @@ export default async function HomePage() {
               All artworks · {artworks.length}
             </Link>
           </div>
-          <ArtworkGrid projects={featured} />
+          <ArtworkGrid projects={featured} columns={4} />
         </section>
       )}
 

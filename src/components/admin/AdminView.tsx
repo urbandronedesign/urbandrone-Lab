@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useProjects, useDeleteProject, useReorderProjects, useStartSync, useSyncProgress } from '@/lib/queries';
 import { TokenPool } from './TokenPool';
 import { AdminNav } from './AdminNav';
+import { FeaturedManager } from './FeaturedManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -267,6 +268,7 @@ export function AdminView() {
           <TokenPool />
         </TabsContent>
         <TabsContent value="projects" className="mt-0">
+        <FeaturedManager projects={allProjects} />
 
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">

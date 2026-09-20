@@ -268,7 +268,7 @@ function Editor({ project }: { project: Project | null }) {
             </div>
             <div className="flex items-end">
               <label className="flex h-9 w-full items-center justify-between rounded-md border border-border px-3 text-sm">
-                <span>Featured on home</span>
+                <span title="Up to 4 projects; order them in Projects → Featured on the home page">Featured on home</span>
                 <Switch checked={form.featured} onCheckedChange={(v) => set('featured', v)} aria-label="Featured" />
               </label>
             </div>

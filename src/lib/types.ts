@@ -73,6 +73,7 @@ export type Project = {
   section: ProjectSection;
   slug: string;
   featured: boolean;
+  featuredOrder: number;
   tags: string[];
   links: ProjectLink[];
   contract: string | null;

@@ -223,3 +223,17 @@ export function useStartSync() {
     },
   });
 }
+
+/** Set the home-page featured projects (ordered, max 4). */
+export function useSetFeatured() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      jsonOrThrow<{ ok: boolean; ids: string[]; max: number }>(
+        fetch(`${BASE}/api/featured`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ids }) })
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}

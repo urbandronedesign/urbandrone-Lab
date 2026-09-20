@@ -36,12 +36,21 @@ function ArtworkCard({ project, index, base }: { project: Project; index: number
   );
 }
 
-/** Tight mosaic of artwork covers, 2 → 3 → 4 → 5 columns. */
-export function ArtworkGrid({ projects, base = '/artworks/' }: { projects: Project[]; base?: string }) {
+/** Tight mosaic of artwork covers, 2 → 3 → 4 → 5 columns (or a fixed 2 → 4 with `columns={4}`). */
+export function ArtworkGrid({
+  projects,
+  base,
+  columns,
+}: {
+  projects: Project[];
+  /** Fixed link base; by default each card links into its own section. */
+  base?: string;
+  columns?: 4;
+}) {
   return (
-    <ul className="grid grid-cols-2 gap-x-1 gap-y-6 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <ul className={columns === 4 ? 'grid grid-cols-2 gap-x-1 gap-y-6 md:grid-cols-4' : 'grid grid-cols-2 gap-x-1 gap-y-6 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'}>
       {projects.map((p, i) => (
-        <ArtworkCard key={p.id} project={p} index={i} base={base} />
+        <ArtworkCard key={p.id} project={p} index={i} base={base ?? `/${p.section}/`} />
       ))}
     </ul>
   );
