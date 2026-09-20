@@ -7,7 +7,7 @@ import { PageIntro } from '@/components/site/PageIntro';
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
-  return pageMeta(site, '/lab/', { title: 'Lab', description: `Tools, course manuals and experiments from the studio: software, teaching material and research.` });
+  return pageMeta(site, '/lab/', { title: 'Lab — Tools, software and courses', description: `Tools, course manuals and experiments from the studio: software, teaching material and research.` });
 }
 
 export default async function LabPage() {

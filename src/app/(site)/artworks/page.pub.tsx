@@ -7,7 +7,7 @@ import { PageIntro } from '@/components/site/PageIntro';
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
-  return pageMeta(site, '/artworks/', { title: 'Artworks', description: `Collections, series and single works by ${site.author || site.name} — architecture fiction and generative art minted on Tezos.` });
+  return pageMeta(site, '/artworks/', { title: 'Artworks — Architecture fiction on Tezos', description: `Collections, series and single works by ${site.author || site.name} — architecture fiction and generative art minted on Tezos.` });
 }
 
 export default async function ArtworksPage() {

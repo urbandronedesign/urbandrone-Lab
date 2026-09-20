@@ -62,5 +62,6 @@ export async function saveSite(input: Partial<SiteInfo>): Promise<SiteInfo> {
 
 /** `Name — Tagline`, or just the name. */
 export function siteTitle(site: SiteInfo): string {
-  return site.tagline ? `${site.name} — ${site.tagline}` : site.name;
+  const who = [site.author, site.tagline].filter(Boolean).join(', ');
+  return who ? `${site.name} — ${who}` : site.name;
 }

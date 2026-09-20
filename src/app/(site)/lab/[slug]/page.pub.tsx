@@ -7,7 +7,7 @@ import { PrevNext } from '@/components/site/PrevNext';
 import { resolveDownloads } from '@/lib/github';
 import { getSite } from '@/lib/site';
 import { JsonLd } from '@/components/site/JsonLd';
-import { breadcrumbJsonLd, graph, pageMeta, projectDescription, projectJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, graph, pageMeta, projectDescription, projectJsonLd, projectTitle } from '@/lib/seo';
 
 export const dynamicParams = false;
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const [p, site] = await Promise.all([getProjectBySlug((await params).slug), getSite()]);
   if (!p) return {};
   const cover = p.cover ?? p.media[0];
-  return pageMeta(site, `/lab/${p.slug}/`, { title: p.title, description: projectDescription(p, site), image: cover?.url, type: 'article' });
+  return pageMeta(site, `/lab/${p.slug}/`, { title: projectTitle(p, site), description: projectDescription(p, site), image: cover?.url, type: 'article' });
 }
 
 export default async function LabEntryPage({ params }: { params: Promise<{ slug: string }> }) {

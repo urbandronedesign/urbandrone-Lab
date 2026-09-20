@@ -17,15 +17,33 @@ export function absolute(site: SiteInfo, path: string): string {
   return path.startsWith('http') ? path : `${baseUrl(site)}${path}`;
 }
 
-/** First paragraph of a project's text, or a generated one-liner when there is none. */
-export function projectDescription(p: Project, site: SiteInfo): string {
-  const first = (p.description || '').split(/\n{2,}/)[0].replace(/\s+/g, ' ').trim();
-  if (first) return first.length > 160 ? `${first.slice(0, 157).replace(/\s+\S*$/, '')}…` : first;
+/** Cut a text at a word boundary so it fits a search snippet (~160 chars). */
+export function clip(text: string, max = 160): string {
+  const t = text.replace(/\s+/g, ' ').trim();
+  return t.length > max ? `${t.slice(0, max - 3).replace(/\s+\S*$/, '')}…` : t;
+}
+
+/** Search-friendly title: "<title> — <category>, <year>" while it fits with the site name appended (≤ 60 chars). */
+export function projectTitle(p: Project, site: SiteInfo): string {
+  const suffix = ` — ${site.name}`;
+  const candidates = p.section === 'lab' ? [`${p.title} — ${p.category}`, p.title] : [`${p.title} — ${p.category}, ${p.year}`, `${p.title}, ${p.year}`, p.title];
+  return candidates.find((c) => (c + suffix).length <= 60) ?? p.title;
+}
+
+/** Generated one-line summary used when a project has little or no text. */
+function generatedDescription(p: Project, site: SiteInfo): string {
   const who = site.author || site.name;
   const n = p.media.length;
   const collection = p.tokens[0]?.collectionName;
-  if (p.section === 'lab') return `${p.title} — ${p.category.toLowerCase()} by ${who}.`;
-  return `${p.title} — ${n === 1 ? 'a work' : `${n} works`} by ${who}, ${p.year}${p.tokens.length ? `, minted on Tezos${collection ? ` (${collection})` : ''}` : ''}.`;
+  if (p.section === 'lab') return `${p.title} — ${p.category.toLowerCase()} by ${who}, part of the Urbandrone Lab: tools, courses and experiments from the studio.`;
+  return `${p.title} — ${n === 1 ? 'a work' : `${n} works`} by ${who}, ${p.year}${p.tokens.length ? `, minted on Tezos${collection ? ` (${collection})` : ''}` : ''}. ${p.category} from the Urbandrone studio.`;
+}
+
+/** First paragraph of a project's text, completed with a generated summary when it is too short for a snippet. */
+export function projectDescription(p: Project, site: SiteInfo): string {
+  const first = (p.description || '').split(/\n{2,}/)[0].replace(/\s+/g, ' ').trim();
+  if (first.length >= 70) return clip(first);
+  return clip([first, generatedDescription(p, site)].filter(Boolean).join(' '));
 }
 
 /** Page metadata with canonical URL and Open Graph for a given path. */

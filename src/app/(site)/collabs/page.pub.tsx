@@ -7,7 +7,7 @@ import { PageIntro } from '@/components/site/PageIntro';
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
-  return pageMeta(site, '/collabs/', { title: 'Collabs', description: `Collaborations with other artists, studios and institutions.` });
+  return pageMeta(site, '/collabs/', { title: 'Collabs — Collaborative works', description: `Collaborations with other artists, studios and institutions — shared works, installations and commissions signed with ${site.author || site.name} / ${site.name}.` });
 }
 
 export default async function CollabsPage() {

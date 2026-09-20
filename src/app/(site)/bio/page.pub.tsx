@@ -5,11 +5,11 @@ import { getBio, groupCv } from '@/lib/bio';
 import { getSite } from '@/lib/site';
 import { BioText } from '@/components/site/BioText';
 import { JsonLd } from '@/components/site/JsonLd';
-import { breadcrumbJsonLd, graph, pageMeta, personJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, clip, graph, pageMeta, personJsonLd } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const [site, bio] = await Promise.all([getSite(), getBio()]);
-  return pageMeta(site, '/bio/', { title: 'Bio', type: 'profile', description: bio.headline || site.tagline, image: bio.portrait?.url });
+  return pageMeta(site, '/bio/', { title: `Bio — ${[site.author || site.name, site.tagline].filter(Boolean).join(', ')}`, type: 'profile', description: clip((bio.text || '').split(/\n{2,}/)[0] || bio.headline || site.description), image: bio.portrait?.url });
 }
 
 export default async function BioPage() {
