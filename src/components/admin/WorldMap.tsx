@@ -189,8 +189,8 @@ export function WorldMap({ rows }: { rows: Row[] }) {
                 d={d}
                 fill={op ? 'var(--foreground)' : 'var(--muted)'}
                 fillOpacity={op || 1}
-                stroke="var(--background)"
-                strokeWidth={0.6 / view.k}
+                stroke="var(--border)"
+                strokeWidth={0.7}
                 vectorEffect="non-scaling-stroke"
                 onMouseMove={(e) => {
                   if (drag.current?.moved) return;
