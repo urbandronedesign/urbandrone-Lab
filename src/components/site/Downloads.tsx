@@ -9,9 +9,9 @@ export function Downloads({ releases }: { releases: ReleaseInfo[] }) {
       {releases.map((r) => (
         <section key={`${r.owner}/${r.repo}`} aria-labelledby={`dl-${r.repo}`}>
           <div className="flex items-baseline justify-between gap-4">
-            <h3 id={`dl-${r.repo}`} className="t-label text-muted-foreground">
+            <h2 id={`dl-${r.repo}`} className="t-label text-muted-foreground">
               Download
-            </h3>
+            </h2>
             <span className="t-label text-muted-foreground">
               {r.version} · {new Date(r.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>

@@ -4,7 +4,9 @@ import { SESSION_COOKIE, authConfigured, verifySessionToken } from '@/lib/auth';
 const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export async function proxy(req: NextRequest) {
-  const { pathname, searchParams } = req.nextUrl;
+  // trailingSlash is on: compare paths without their trailing slash
+  const { searchParams } = req.nextUrl;
+  const pathname = req.nextUrl.pathname.replace(/\/+$/, '') || '/';
 
   // Legacy deep link from the old single-page routing
   if (pathname === '/' && searchParams.get('v') === 'admin') {

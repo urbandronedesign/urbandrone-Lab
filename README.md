@@ -102,6 +102,23 @@ Step-by-step: [docs/ANALYTICS-SETUP.md](docs/ANALYTICS-SETUP.md).
    sources, browsers and systems (cached 10 min; *refresh* bypasses the cache).
    In development, `/admin/?mock=1` previews the card with sample data.
 
+## Security & accessibility notes
+
+- Everything under `/admin` and every mutating or admin-only API route is gated by
+  `src/proxy.ts` (signed httpOnly session cookie, SameSite=Lax → no cross-site POST).
+  The proxy compares paths without their trailing slash. Sign-in, forgot and reset
+  are throttled per IP. Publishing runs `git` via `execFile` (no shell) with the
+  message as an argument.
+- The static export contains no admin, no API and no secrets; media and interactive
+  pieces are requested in CORS mode from objkt's CDN (which allows any origin) so
+  browsers' Opaque Response Blocking does not interfere with audio/video.
+- `npm audit --omit=dev`: the only remaining advisory (deepmerge-ts via
+  `@prisma/config`) affects the Prisma CLI's config loader at build time, not the
+  site or the admin at runtime; it clears with Prisma 7+, which is a larger migration.
+- axe-core (WCAG 2.1 A/AA + best practices) passes on all public pages in light and
+  dark mode; keyboard: skip link, focus-trapped lightbox with Escape and focus return,
+  `aria-expanded` mobile menu, `prefers-reduced-motion` honoured.
+
 ## Admin account
 
 Accounts live in the database (scrypt-hashed passwords), not in `.env`.
