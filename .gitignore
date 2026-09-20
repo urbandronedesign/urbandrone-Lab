@@ -57,3 +57,6 @@ server.log
 *.pid
 
 certificates
+
+# Google service-account key for the dashboard analytics
+ga-credentials.json

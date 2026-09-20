@@ -72,7 +72,7 @@ export function SiteForm({ site }: { site: SiteInfo }) {
               <Logo className="h-6 w-6" />
             </Link>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin">
+              <Link href="/admin/projects">
                 <ArrowLeft className="mr-2 h-3.5 w-3.5" /> Projects
               </Link>
             </Button>
@@ -147,6 +147,17 @@ export function SiteForm({ site }: { site: SiteInfo }) {
                 <Input id="s-url" value={draft.url} onChange={(e) => set('url', e.target.value)} placeholder="https://urbandrone.xyz" className="tracking-mono text-xs" />
                 <p className="text-[10px] text-muted-foreground tracking-mono">Used for share previews (Open Graph).</p>
               </div>
+            </div>
+          </section>
+
+          <section className="space-y-5">
+            <h2 className="font-display text-lg italic">Analytics</h2>
+            <div className="space-y-2">
+              <Label htmlFor="s-ga" className="text-xs uppercase tracking-[0.2em]">Google Analytics 4 — Measurement ID</Label>
+              <Input id="s-ga" value={draft.gaMeasurementId} onChange={(e) => set('gaMeasurementId', e.target.value.trim())} placeholder="G-XXXXXXXXXX" className="tracking-mono text-xs" />
+              <p className="text-[10px] text-muted-foreground tracking-mono">
+                Analytics → Admin → Data streams → your web stream → Measurement ID. Loaded only after the visitor accepts the consent bar (GDPR). Empty = no analytics, no banner.
+              </p>
             </div>
           </section>
 

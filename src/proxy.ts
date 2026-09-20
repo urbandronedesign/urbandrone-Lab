@@ -23,7 +23,9 @@ export async function proxy(req: NextRequest) {
     (MUTATING.has(req.method) ||
       (pathname === '/api/projects' && searchParams.get('all') === 'true') ||
       pathname.startsWith('/api/tokens') ||
-      pathname.startsWith('/api/tezos'));
+      pathname.startsWith('/api/tezos') ||
+      pathname.startsWith('/api/dashboard') ||
+      pathname.startsWith('/api/publish'));
 
   if (!isAdminPage && !isProtectedApi) return NextResponse.next();
 

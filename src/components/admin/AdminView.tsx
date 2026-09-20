@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Logo } from '@/components/Logo';
 import { useRouter } from 'next/navigation';
 import { useProjects, useDeleteProject, useReorderProjects, useStartSync, useSyncProgress } from '@/lib/queries';
-import { useSite } from '@/components/SiteProvider';
 import { TokenPool } from './TokenPool';
+import { AdminNav } from './AdminNav';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -149,7 +148,6 @@ export function AdminView() {
   const { data, isLoading, error } = useProjects(true);
   const del = useDeleteProject();
   const reorder = useReorderProjects();
-  const site = useSite();
   const update = useUpdateProject();
 
   const [confirmDel, setConfirmDel] = useState<Project | null>(null);
@@ -196,12 +194,6 @@ export function AdminView() {
     }
   };
 
-  const signOut = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.replace('/admin/login');
-    router.refresh();
-  };
-
   const onTogglePublish = async (project: Project, pub: boolean) => {
     try {
       await update.mutateAsync({ id: project.id, published: pub });
@@ -219,67 +211,25 @@ export function AdminView() {
       transition={{ duration: 0.3 }}
       className="flex min-h-screen flex-col"
     >
-      {/* Admin header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-30">
-        <div className="mx-auto w-full max-w-[1600px] px-6 md:px-12 lg:px-24">
-          <div className="flex h-16 items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Logo className="h-6 w-6" />
-              <h1 className="font-display text-2xl italic">{site.name}</h1>
-              <span className="tracking-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                · Admin
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSync(false)}
-                onContextMenu={(e) => { e.preventDefault(); onSync(true); }}
-                disabled={syncing || startSync.isPending}
-                title="Fetch new/changed tokens from objkt and refresh media. Right-click for a full re-sync."
-              >
-                {syncing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Hexagon className="mr-2 h-3.5 w-3.5" />}
-                {syncLabel}
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/">
-                  <ArrowLeft className="mr-2 h-3.5 w-3.5" />
-                  Back to gallery
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild title="Site information">
-                <Link href="/admin/site">
-                  <Settings2 className="mr-2 h-3.5 w-3.5" />
-                  Site
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild title="Biography page">
-                <Link href="/admin/bio">
-                  <BookUser className="mr-2 h-3.5 w-3.5" />
-                  Bio
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild title="Account settings">
-                <Link href="/admin/account">
-                  <UserRound className="mr-2 h-3.5 w-3.5" />
-                  Account
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={signOut} title="Sign out">
-                <LogOut className="mr-2 h-3.5 w-3.5" />
-                Sign out
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/admin/projects/new">
-                  <Plus className="mr-2 h-3.5 w-3.5" />
-                  New project
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminNav>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onSync(false)}
+          onContextMenu={(e) => { e.preventDefault(); onSync(true); }}
+          disabled={syncing || startSync.isPending}
+          title="Fetch new/changed tokens from objkt and refresh media. Right-click for a full re-sync."
+        >
+          {syncing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Hexagon className="mr-2 h-3.5 w-3.5" />}
+          {syncLabel}
+        </Button>
+        <Button size="sm" asChild>
+          <Link href="/admin/projects/new">
+            <Plus className="mr-2 h-3.5 w-3.5" />
+            New project
+          </Link>
+        </Button>
+      </AdminNav>
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 py-8 md:px-12 lg:px-24">
         <Tabs value={tab} onValueChange={(v) => setTab(v as 'projects' | 'tokens')}>

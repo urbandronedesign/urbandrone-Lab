@@ -89,7 +89,7 @@ export function BioForm({ bio }: { bio: BioInfo }) {
               <Logo className="h-6 w-6" />
             </Link>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin">
+              <Link href="/admin/projects">
                 <ArrowLeft className="mr-2 h-3.5 w-3.5" /> Projects
               </Link>
             </Button>

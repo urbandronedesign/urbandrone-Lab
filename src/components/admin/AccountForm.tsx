@@ -61,7 +61,7 @@ export function AccountForm({
   };
 
   return (
-    <AuthShell kicker="Account" backHref="/admin" backLabel="Back to admin">
+    <AuthShell kicker="Account" backHref="/admin" backLabel="Back to dashboard">
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="ac-username">Username</Label>

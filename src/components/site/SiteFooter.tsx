@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { useSite } from '@/components/SiteProvider';
+import { resetAnalyticsConsent } from './Analytics';
 
 export function SiteFooter() {
   const site = useSite();
@@ -39,8 +40,13 @@ export function SiteFooter() {
           </nav>
         )}
 
-        <p className="t-label text-muted-foreground md:col-span-12">
-          © {year} {site.copyright || site.name}
+        <p className="t-label flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground md:col-span-12">
+          <span>© {year} {site.copyright || site.name}</span>
+          {site.gaMeasurementId && (
+            <button type="button" onClick={resetAnalyticsConsent} className="cursor-pointer transition-colors hover:text-foreground">
+              Cookie settings
+            </button>
+          )}
         </p>
       </div>
     </footer>

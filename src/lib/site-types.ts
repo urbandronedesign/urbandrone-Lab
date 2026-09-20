@@ -13,6 +13,7 @@ export type SiteInfo = {
   keywords: string[];
   links: SiteLink[];
   about: string;
+  gaMeasurementId: string;
 };
 
 export const DEFAULT_SITE: SiteInfo = {
@@ -26,4 +27,5 @@ export const DEFAULT_SITE: SiteInfo = {
   keywords: [],
   links: [],
   about: '',
+  gaMeasurementId: '',
 };
