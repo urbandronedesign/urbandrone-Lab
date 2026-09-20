@@ -36,6 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = siteTitle(site);
   return {
     title: { default: title, template: `%s — ${site.name}` },
+    // No Referer to other origins: objkt's media CDN refuses hotlinked requests that carry one
+    referrer: 'same-origin',
     description: site.description,
     keywords: site.keywords.length ? site.keywords : undefined,
     authors: site.author ? [{ name: site.author }] : undefined,
