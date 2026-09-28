@@ -131,6 +131,24 @@ click (poster + play), never autoplay.
 
 Launcher on the owner's PC: `admin.cmd` → `scripts/admin.js` (both gitignored).
 
+### Getting in, and getting back in
+
+The password exists only as a scrypt hash in `db/auth.json`; **it cannot be read back**,
+by anyone, including from this repo. Three ways in, in order of convenience:
+
+1. **Normal sign-in** — https://localhost:3000/admin, username `urbandrone` (e-mail works
+   too). Let the browser's password manager save it; the origin is stable.
+2. **Forgot password** — sign-in page → *Forgot password?* → username or e-mail. With no
+   SMTP configured the single-use link (30 min) is **printed in the terminal window that
+   `admin.cmd` opened**: `…/admin/reset?token=…`. Paste it in the browser, set a new one.
+   Works entirely offline.
+3. **Start over** — delete `db/auth.json` and reload `/admin`: it returns to the first-run
+   setup page. Content in `db/custom.db` is untouched.
+
+Change username, e-mail or password in **admin → Account** (the current password is
+always required). Do not keep a copy of the password inside the project folder — even
+ignored, it is one `git add -f` away from being public; use a password manager.
+
 ## 7. Security model
 
 - Session = HMAC-SHA256 signed cookie (`atelier_admin`, 7 days, httpOnly, SameSite=Lax,
@@ -141,10 +159,14 @@ Launcher on the owner's PC: `admin.cmd` → `scripts/admin.js` (both gitignored)
   `GET /api/projects?all=true`. **Paths are compared without trailing slash.**
 - Throttles per IP: login 10/15 min, forgot 5, reset 10. Passwords scrypt, min 10 chars.
 - **Credentials never enter git.** Until 2026-09-28 the account lived in the committed
-  `db/custom.db`, which published the username, e-mail and password hash; the password
-  was rotated and the account moved to the gitignored `db/auth.json`. Keep it that way:
-  never add an account model to `prisma/schema.prisma`. Losing `db/auth.json` is not a
-  disaster — delete it and `/admin` returns to the first-run setup page.
+  `db/custom.db`, so the public repo carried the username, e-mail and password hash
+  (commits up to `b58ba11`). Fixed in two steps: `85ccc92` moved the account to the
+  gitignored `db/auth.json` and removed the models from the schema; `3b36b67` dropped
+  the now-empty `AdminUser`/`PasswordReset` tables from the committed database. The
+  password was rotated, so the hashes still in git history open nothing.
+  Keep it that way: **never add an account model to `prisma/schema.prisma`**, and never
+  commit `db/auth.json` or a `db/*.bak` copy of an older database (both are ignored).
+  Losing `db/auth.json` is not a disaster — delete it and `/admin` returns to setup.
 - Publish runs `git` via `execFile` (no shell). Upload validates type/size, random name.
 - Static site has no admin/API/secrets; `.env`, `certificates/`, launcher are ignored.
 - Known accepted advisory: deepmerge-ts via `@prisma/config` (Prisma CLI, build time).
@@ -197,3 +219,22 @@ SMTP_HOST/PORT/USER/PASS, MAIL_FROM     # optional, password-reset mail
   emulation (used during development from `%TEMP%\shots`).
 - The Next dev "N" badge shows in screenshots; it is not part of the site.
 - `trailingSlash` + exact path comparisons = the draft-leak bug of 2026-09-20. Normalise.
+- Inspect the committed database without Prisma with Node's built-in `node:sqlite`
+  (`new DatabaseSync('db/custom.db', { readOnly: true })`) — handy to prove what a commit
+  would publish, and to compare `git show HEAD:db/custom.db` against the working copy
+  table by table before committing a binary file.
+- `npx prisma db push` after removing a model needs `--accept-data-loss`; back the
+  database up first (`db/*.bak` is ignored) and check the warning names only the tables
+  you meant to drop.
+
+## 12. Log of notable changes
+
+Dated so a future reader knows what was decided when, and why.
+
+| Date | Change |
+|---|---|
+| 2026-09-20 | SEO pass: `robots.txt` (17 crawlers named), `sitemap.xml`, `llms.txt`, canonicals, per-page OG covers, schema.org JSON-LD (`b4b0fbe`). |
+| 2026-09-21 | Handbook written (`c2aa3fc`). Site → Description rewritten to 159 chars and a two-paragraph About statement added (`b58ba11`, `92d5b3e`). |
+| 2026-09-21 | Bing Webmaster verified via `public/BingSiteAuth.xml` (`b0015c5`); Google Search Console verified by TXT record in Netlify DNS — **that record must stay**. |
+| 2026-09-21 | Bing's SEO checker flagged short titles and out-of-range descriptions: titles are now 30–60 chars (`projectTitle`) and descriptions 70–160 (`clip`, `projectDescription`) on all 95 pages (`ac9c3b3`). Its "H1 tag missing" was a stale crawl — every page has exactly one. |
+| 2026-09-28 | **Credential leak fixed.** The committed `db/custom.db` had published the admin username, e-mail and password hash. Password rotated; account moved to the gitignored `db/auth.json` (`85ccc92`); auth tables dropped from the database (`3b36b67`). Full auth flow re-verified: setup, login by name and e-mail, bad password, route guard, account change, forgot → reset → token reuse refused. |
