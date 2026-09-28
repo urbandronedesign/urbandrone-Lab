@@ -61,3 +61,7 @@ certificates
 # local admin launcher (not part of the site)
 admin.cmd
 scripts/admin.js
+
+# Admin credentials — never commit (the repo is public)
+db/auth.json
+db/auth.json.*.tmp

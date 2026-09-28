@@ -61,10 +61,11 @@ src/proxy.ts               Next 16 "proxy" (middleware): session check for /admi
 src/components/site/       public UI (SiteHeader, ArtworkGrid, ProjectGallery, Lightbox, ProjectMeta, LabList, Downloads, BioText, Analytics, JsonLd…)
 src/components/media/      MediaImage (srcset + blur), MediaPlayer (image/video/audio/interactive)
 src/components/admin/      Dashboard, AdminView (projects + tokens), ProjectEditor, TokenPool/TokenManager, FeaturedManager, SiteForm, BioForm, WorldMap, auth forms
-src/lib/                   db (Prisma), auth (session cookie), admin-user (accounts), site, bio, content (public queries), serialize (DB → Project/Media), seo, github (latest releases), dashboard, mailer, throttle, projects
+src/lib/                   db (Prisma), auth (session cookie), admin-user (accounts, JSON store), site, bio, content (public queries), serialize (DB → Project/Media), seo, github (latest releases), dashboard, mailer, throttle, projects
 src/lib/tezos/             objkt client, ipfs candidates, media pipeline (sharp), sync orchestration, config
-prisma/schema.prisma       Project, Token, ProjectToken, Image, Site, Bio, AdminUser, PasswordReset, Setting
+prisma/schema.prisma       Project, Token, ProjectToken, Image, Site, Bio, Setting  (NO credentials)
 db/custom.db               the content (committed)
+db/auth.json               the admin account + reset tokens (GITIGNORED, never commit)
 public/media/              WebP variants of token images (committed, ~260 MB)   public/uploads/  manual uploads
 design-system/urbandrone/MASTER.md   tokens, type roles, components, motion, a11y rules
 ```
@@ -81,7 +82,11 @@ design-system/urbandrone/MASTER.md   tokens, type roles, components, motion, a11
 - **ProjectToken** — ordered membership. **Image** — manual uploads.
 - **Site** — name, tagline, description, author, copyright, email, url, keywords,
   links, about, `goatcounterCode`. **Bio** — headline/text EN + FR, portrait, CV JSON.
-- **AdminUser / PasswordReset** — accounts (scrypt), reset tokens (hashed, 30 min).
+- **Admin account** — *not in the database.* `db/custom.db` is committed to a **public**
+  repository, so credentials live in `db/auth.json` (gitignored, `AUTH_STORE` overrides
+  the path): one user (username, email, scrypt hash) plus reset tokens (sha256-hashed,
+  30 min). Written via a temp file + rename, with read-modify-write cycles serialised.
+  Read and written only by `src/lib/admin-user.ts`; nothing else may touch it.
 - **Setting** — key/value (`tezos:lastSync`).
 
 Serialization (`lib/serialize.ts`) turns rows into the frontend `Project` with a
@@ -135,6 +140,11 @@ Launcher on the owner's PC: `admin.cmd` → `scripts/admin.js` (both gitignored)
   API plus `/api/tokens`, `/api/tezos`, `/api/dashboard`, `/api/publish`, and
   `GET /api/projects?all=true`. **Paths are compared without trailing slash.**
 - Throttles per IP: login 10/15 min, forgot 5, reset 10. Passwords scrypt, min 10 chars.
+- **Credentials never enter git.** Until 2026-09-28 the account lived in the committed
+  `db/custom.db`, which published the username, e-mail and password hash; the password
+  was rotated and the account moved to the gitignored `db/auth.json`. Keep it that way:
+  never add an account model to `prisma/schema.prisma`. Losing `db/auth.json` is not a
+  disaster — delete it and `/admin` returns to the first-run setup page.
 - Publish runs `git` via `execFile` (no shell). Upload validates type/size, random name.
 - Static site has no admin/API/secrets; `.env`, `certificates/`, launcher are ignored.
 - Known accepted advisory: deepmerge-ts via `@prisma/config` (Prisma CLI, build time).

@@ -134,7 +134,9 @@ advice are in [docs/SEO.md](docs/SEO.md).
 
 ## Admin account
 
-Accounts live in the database (scrypt-hashed passwords), not in `.env`.
+The account lives in `db/auth.json` — scrypt-hashed password, **gitignored**, never
+published (the repo is public, and `db/custom.db` is committed with your content).
+Back it up if you like; if it is lost, delete it and `/admin` offers setup again.
 
 - **First run**: opening `/admin` with no account redirects to `/admin/setup` —
   choose a username, an email (used only for resets) and a password (10+ chars).
