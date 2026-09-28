@@ -65,3 +65,4 @@ scripts/admin.js
 # Admin credentials — never commit (the repo is public)
 db/auth.json
 db/auth.json.*.tmp
+db/*.bak
