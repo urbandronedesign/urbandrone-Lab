@@ -177,6 +177,11 @@ ignored, it is one `git add -f` away from being public; use a password manager.
 
 - Push to `main` → `.github/workflows/deploy.yml` → `npm ci`, `prisma generate`,
   `build:static` (with `GITHUB_TOKEN` for release lookups) → Pages. ~90 s.
+- The same workflow also runs **daily at 04:17 UTC** (`schedule`) so Download blocks
+  pick up new releases without a push; it also accepts a `repository_dispatch` of type
+  `release-published` (unused — would need a token in the release repo). GitHub
+  disables a public repo's schedule after **60 days without commits**: re-enable it in
+  the Actions tab if links go stale after a quiet spell.
 - Domain: DNS at **Netlify DNS** (four `A` → GitHub IPs, `CNAME www`); Pages custom
   domain `urbandrone.xyz`, HTTPS enforced. Registrar OVH. Details in DOMAIN-SETUP.md.
 - Browser cache: Pages sends `max-age=600`; hard-reload to see a fresh publish sooner.
@@ -229,6 +234,10 @@ SMTP_HOST/PORT/USER/PASS, MAIL_FROM     # optional, password-reset mail
 - `npx prisma db push` after removing a model needs `--accept-data-loss`; back the
   database up first (`db/*.bak` is ignored) and check the warning names only the tables
   you meant to drop.
+- Download links are baked in at build time, and the artlux release job **retires old
+  releases to drafts** (keeps 3) — so a stale build doesn't just show an old version, its
+  buttons 404. Check with `curl -r 0-0 -L -o /dev/null -w '%{http_code}' <asset url>`
+  (206 = fine) against the URLs in the live page.
 
 ## 12. Log of notable changes
 
@@ -241,3 +250,4 @@ Dated so a future reader knows what was decided when, and why.
 | 2026-09-21 | Bing Webmaster verified via `public/BingSiteAuth.xml` (`b0015c5`); Google Search Console verified by TXT record in Netlify DNS — **that record must stay**. |
 | 2026-09-21 | Bing's SEO checker flagged short titles and out-of-range descriptions: titles are now 30–60 chars (`projectTitle`) and descriptions 70–160 (`clip`, `projectDescription`) on all 95 pages (`ac9c3b3`). Its "H1 tag missing" was a stale crawl — every page has exactly one. |
 | 2026-09-28 | **Credential leak fixed.** The committed `db/custom.db` had published the admin username, e-mail and password hash. Password rotated; account moved to the gitignored `db/auth.json` (`85ccc92`); auth tables dropped from the database (`3b36b67`). Full auth flow re-verified: setup, login by name and e-mail, bad password, route guard, account change, forgot → reset → token reuse refused. |
+| 2026-10-25 | **ArtLux download buttons were 404** (site built 2026-10-21 still pointed at v0.33.2, since retired to a draft). Deploy workflow now also runs daily so release links follow new versions (`f3bb1d1`). All 22 external Lab links checked: fine. |
