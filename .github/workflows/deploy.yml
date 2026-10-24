@@ -9,6 +9,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Optional instant rebuild: a release job elsewhere can send this with a
+  # token that has Contents: write on this repo. Not wired up yet.
+  repository_dispatch:
+    types: [release-published]
+  # Daily rebuild so Download blocks follow new releases (artlux retires old
+  # releases to drafts, which breaks links baked into an older build).
+  schedule:
+    - cron: '17 4 * * *'
 
 permissions:
   contents: read

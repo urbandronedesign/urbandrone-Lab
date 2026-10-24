@@ -201,7 +201,10 @@ SMTP_HOST/PORT/USER/PASS, MAIL_FROM     # optional, password-reset mail
 - **Add / edit content** → admin → Save → dashboard **Publish**.
 - **New mint** → Sync Tezos → the token appears in its contract project or the pool → Publish.
 - **New software release** → nothing to do; the Download block resolves the latest
-  release at build time. Trigger a rebuild by publishing anything (or re-run the workflow).
+  release at build time, and the deploy workflow rebuilds daily (04:17 UTC), so links
+  are at most a day behind. For an immediate update, push anything or re-run the workflow.
+  (An instant rebuild per release would need a `repository_dispatch` of type
+  `release-published` sent from the release repo with a token — not set up.)
 - **Feature works on the home** → Projects → *Featured on the home page*.
 - **Move a project to Collabs/Lab** → editor → Section.
 - **Re-encode all media** (quality/width change in `lib/tezos/config.ts`) →
