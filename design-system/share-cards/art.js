@@ -262,7 +262,7 @@ function interieurs() {
 }
 
 const COVERS = [
-  { slug: 'artlux', kind: 'Software', title: 'ArtLux', sub: 'LED pixel mapping for live shows', art: artlux },
+  { slug: 'artlux', kind: 'Software', title: 'ArtLux', sub: 'A media server for interactive installations', art: artlux },
   { slug: 'artlux-launcher', kind: 'Software', title: 'ArtLux Launcher', sub: 'Install, update and start ArtLux on a venue PC', art: launcher },
   { slug: 'plotter3d', kind: 'Software', title: 'Plotter3D', sub: '3D models into pen-plotter drawings', art: plotter3d },
   { slug: '3dviz', kind: 'Course manual', title: '3DVIZ', sub: 'SketchUp & Rhino to Twinmotion', art: viz },
