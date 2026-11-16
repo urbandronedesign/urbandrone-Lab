@@ -7,31 +7,57 @@ function rng(seed) {
 }
 const f = (n) => n.toFixed(1);
 
-// ---------- ArtLux: video frame sampled onto LED strips ----------
+// ---------- ArtLux: one show driving projectors, LEDs, lights and sound ----------
 function artlux() {
   const R = rng(3);
-  const hue = (x, y) => 330 + (x - AX) / 800 * 230 + Math.sin(y / 70) * 25; // magenta→orange→cyan sweep
-  let s = '';
-  // source frame (small, top-left of panel)
-  s += `<defs><linearGradient id="src" x1="0" x2="1" y1="0" y2="1">${[0, .25, .5, .75, 1].map((o) => `<stop offset="${o}" stop-color="hsl(${330 + o * 230},85%,58%)"/>`).join('')}</linearGradient>
-  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter></defs>`;
-  s += `<rect x="${AX + 40}" y="56" width="200" height="112" fill="url(#src)"/>`;
-  s += `<rect x="${AX + 40}" y="56" width="200" height="112" fill="none" stroke="#0b0b0b" stroke-width="1"/>`;
-  s += `<text x="${AX + 40}" y="190" class="mono">SOURCE · VIDEO / NDI / DMX</text>`;
-  // sampling rays from the frame to the rig
-  for (let i = 0; i < 7; i++) s += `<line x1="${AX + 240}" y1="${70 + i * 15}" x2="${AX + 330 + i * 60}" y2="${250}" stroke="#d0d0d0" stroke-width="1" stroke-dasharray="2 4"/>`;
-  // LED rig: curved strips
-  for (let k = 0; k < 9; k++) {
-    const y0 = 260 + k * 36;
-    for (let i = 0; i < 46; i++) {
-      const x = AX + 70 + i * 15.5;
-      const y = y0 + Math.sin(i / 7 + k * 0.6) * 14;
-      const hsl = `hsl(${hue(x, y) % 360},90%,${55 + R() * 6}%)`;
-      s += `<circle cx="${f(x)}" cy="${f(y)}" r="9" fill="${hsl}" opacity=".45" filter="url(#glow)"/>`;
-      s += `<circle cx="${f(x)}" cy="${f(y)}" r="4.2" fill="${hsl}"/>`;
-    }
-    s += `<text x="${AX + 770}" y="${y0 + 4}" class="mono small">U${k + 1}</text>`;
+  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  let s = `<defs><linearGradient id="src" x1="0" x2="1" y1="0" y2="1">${[0, .25, .5, .75, 1].map((o) => `<stop offset="${o}" stop-color="hsl(${330 + o * 230},85%,60%)"/>`).join('')}</linearGradient>
+  <linearGradient id="wall" x1="0" x2="1" y1="0" y2="1">${[0, .5, 1].map((o) => `<stop offset="${o}" stop-color="hsl(${200 + o * 120},80%,${70 - o * 8}%)"/>`).join('')}</linearGradient>
+  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`;
+  // floor + trigger zone
+  s += `<path d="M440,610L1180,610L1110,470L520,470Z" fill="#f3f3f3"/>`;
+  // DMX beam onto the zone
+  s += `<path d="M712,392L738,392L950,540L815,545Z" fill="#ffd36b" opacity=".28"/>`;
+  s += `<ellipse cx="882" cy="540" rx="92" ry="30" fill="#bfe8f0" opacity=".55" stroke="#0b0b0b" stroke-dasharray="4 4"/>`;
+  s += `<text x="985" y="585" class="mono small">TRIGGER ZONE</text>`;
+  // person
+  s += `<g stroke="#0b0b0b" stroke-width="3.2" stroke-linecap="round" fill="none"><path d="M882,492V526M882,500L866,516M882,500L899,512M882,526L872,548M882,526L892,548"/></g><circle cx="882" cy="482" r="8.5" fill="#0b0b0b"/>`;
+  // source
+  s += `<rect x="440" y="58" width="170" height="96" fill="url(#src)" stroke="#0b0b0b"/>`;
+  s += `<text x="440" y="176" class="mono small">VIDEO · CAMERA · NDI · SPOUT</text>`;
+  s += `<path d="M525,186V244" stroke="#0b0b0b" stroke-width="1.2"/><path d="M519,238L525,248L531,238" fill="#0b0b0b"/>`;
+  // hub
+  s += `<rect x="440" y="250" width="170" height="110" fill="#0b0b0b"/>`;
+  s += `<text x="458" y="296" style="font:300 30px Inter;fill:#fff;letter-spacing:-0.02em">ArtLux</text><text x="458" y="322" class="mono small" style="fill:#bdbdbd">SHOW · ONE PROJECT</text><text x="458" y="340" class="mono small" style="fill:#bdbdbd">TIMELINE · SCENES</text>`;
+  // links from the hub
+  const link = (d) => s += `<path d="${d}" fill="none" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="3 4"/>`;
+  link('M610,270C630,200 630,120 650,96'); link('M610,290C640,290 650,290 676,290'); link('M610,330C650,340 670,360 700,368'); link('M610,345C820,400 940,380 1036,372');
+  // tracking back into the hub
+  s += `<path d="M866,505C760,470 600,440 540,364" fill="none" stroke="#0b0b0b" stroke-width="1.2" stroke-dasharray="5 4"/><path d="M536,374L539,362L548,371" fill="none" stroke="#0b0b0b" stroke-width="1.2"/>`;
+  s += `<text x="450" y="396" class="mono small">TRACKING · OSC</text>`;
+  // projector → warped surface with mesh
+  s += `<rect x="650" y="82" width="46" height="28" fill="#0b0b0b"/><circle cx="700" cy="96" r="8" fill="#fff" stroke="#0b0b0b" stroke-width="2"/>`;
+  const q = [[822, 46], [1152, 68], [1142, 200], [832, 214]];
+  s += `<path d="M706,90L${q[0]}L${q[3]}L706,102Z" fill="#fff4cf" opacity=".7"/>`;
+  s += `<path d="M${q.join('L')}Z" fill="url(#wall)" stroke="#0b0b0b"/>`;
+  const P = (u, v) => lerp(lerp(q[0], q[1], u), lerp(q[3], q[2], u), v);
+  for (let i = 1; i < 6; i++) { const a = P(i / 6, 0), b = P(i / 6, 1); s += `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="#fff" stroke-width=".8" opacity=".8"/>`; }
+  for (let i = 1; i < 4; i++) { const a = P(0, i / 4), b = P(1, i / 4); s += `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="#fff" stroke-width=".8" opacity=".8"/>`; }
+  q.forEach(([x, y]) => s += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#fff" stroke="#0b0b0b"/>`);
+  s += `<text x="832" y="236" class="mono small">PROJECTORS · WARP + BLEND</text>`;
+  // LED strip
+  for (let i = 0; i < 30; i++) {
+    const x = 684 + i * 16, y = 290 + Math.sin(i / 4) * 5, c = `hsl(${(330 + i * 8) % 360},90%,${56 + R() * 6}%)`;
+    s += `<circle cx="${f(x)}" cy="${f(y)}" r="8" fill="${c}" opacity=".45" filter="url(#glow)"/><circle cx="${f(x)}" cy="${f(y)}" r="4" fill="${c}"/>`;
   }
+  s += `<text x="684" y="322" class="mono small">LED · ART-NET / SACN</text>`;
+  // DMX moving head
+  s += `<path d="M704,362V378H746V362" fill="none" stroke="#0b0b0b" stroke-width="3"/><rect x="714" y="368" width="22" height="26" rx="4" fill="#0b0b0b" transform="rotate(-28 725 381)"/>`;
+  s += `<text x="756" y="372" class="mono small">DMX LIGHTING</text>`;
+  // speakers + sound
+  [1040, 1104].forEach((x) => { s += `<rect x="${x}" y="344" width="34" height="56" fill="#fff" stroke="#0b0b0b"/><circle cx="${x + 17}" cy="362" r="6" fill="none" stroke="#0b0b0b"/><circle cx="${x + 17}" cy="384" r="10" fill="none" stroke="#0b0b0b"/>`; });
+  [18, 30, 42].forEach((r, i) => s += `<path d="M${1074 + 15},${372 - r} A${r} ${r} 0 0 1 ${1074 + 15},${372 + r}" fill="none" stroke="#7a7a7a" opacity="${0.8 - i * 0.2}" transform="translate(-15 0) rotate(180 1074 372)"/>`);
+  s += `<text x="1040" y="422" class="mono small">SPATIAL AUDIO</text>`;
   return { bg: '#ffffff', svg: s };
 }
 
