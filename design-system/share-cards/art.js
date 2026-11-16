@@ -294,4 +294,4 @@ ${svg}
 </svg></body></html>`;
 }
 
-module.exports = { COVERS, page, W, H };
+module.exports = { COVERS, page, W, H, AX };

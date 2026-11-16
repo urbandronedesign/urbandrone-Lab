@@ -16,6 +16,13 @@ node design-system/share-cards/render.js public/og/lab            # all
 node design-system/share-cards/render.js public/og/lab plotter3d  # one
 ```
 
+The same illustrations, without the title column, are the Lab projects' **covers**
+on the site (Lab list thumbnail and first image of the page), uploaded as
+`public/uploads/<uuid>.webp` and set as the project cover; the old logo or
+screenshot stays in the page gallery after it. Make one with
+`SCALE=2 ART_ONLY=1 node design-system/share-cards/render.js <dir> <slug>` and
+upload it in the admin as the project's cover.
+
 New Lab project → add an entry to `COVERS` in `art.js` with its slug, render it,
 commit the JPG. The three course repos (3DVIZ, AI_GEN_NARRATIVES,
 gaussian-splatting) carry a copy as `share-card.jpg` with their own Open Graph
