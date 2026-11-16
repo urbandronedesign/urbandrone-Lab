@@ -4768,6 +4768,11 @@ materials unchanged.</pre>
 
 <script>
 /* ---------- Language ---------- */
+/* ---------- Language in the URL ----------
+   ?lang=fr|en wins over the saved choice and switching rewrites it, so a copied
+   link opens in the language it was read in. The #anchor is kept. */
+function urlLang(){ var m=/[?&]lang=(fr|en)(?:&|$)/.exec(location.search); return m?m[1]:null; }
+function langUrl(l){ try{ var u=new URL(location.href); if(u.searchParams.get('lang')===l) return; u.searchParams.set('lang',l); history.replaceState(history.state,'',u.href); }catch(e){} }
 function setLang(l){
   document.body.classList.remove('lang-fr','lang-en');
   document.body.classList.add('lang-'+l);
@@ -4775,7 +4780,7 @@ function setLang(l){
   var s=document.getElementById('search');
   s.placeholder = l==='fr' ? s.dataset.phFr : s.dataset.phEn;
   document.documentElement.lang = l;
-  try{localStorage.setItem('cb-lang',l)}catch(e){}
+  try{localStorage.setItem('cb-lang',l)}catch(e){} langUrl(l);
   buildIndex();
 }
 
@@ -4910,7 +4915,7 @@ if (/[?&]figures\b/.test(location.search)) document.body.classList.add('show-fig
 /* ---------- Init ---------- */
 (function(){
   var l='fr', th=null;
-  try{ l=localStorage.getItem('cb-lang')||'fr';
+  try{ l=urlLang()||localStorage.getItem('cb-lang')||'fr';
        th=localStorage.getItem('cb-theme'); }catch(e){}
   setLang(l);
   if(th){ setTheme(th); }
