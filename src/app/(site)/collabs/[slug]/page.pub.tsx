@@ -7,7 +7,7 @@ import { PrevNext } from '@/components/site/PrevNext';
 import { resolveDownloads } from '@/lib/github';
 import { getSite } from '@/lib/site';
 import { JsonLd } from '@/components/site/JsonLd';
-import { breadcrumbJsonLd, graph, pageMeta, projectDescription, projectJsonLd, projectTitle } from '@/lib/seo';
+import { breadcrumbJsonLd, graph, pageMeta, projectDescription, projectJsonLd, projectTitle, shareImage } from '@/lib/seo';
 
 export const dynamicParams = false;
 
@@ -21,8 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const [p, site] = await Promise.all([getProjectBySlug((await params).slug), getSite()]);
   if (!p) return {};
-  const cover = p.cover ?? p.media[0];
-  return pageMeta(site, `/collabs/${p.slug}/`, { title: projectTitle(p, site), description: projectDescription(p, site), image: cover?.url, type: 'article' });
+  return pageMeta(site, `/collabs/${p.slug}/`, { title: projectTitle(p, site), description: projectDescription(p, site), image: shareImage(p), type: 'article' });
 }
 
 export default async function CollabPage({ params }: { params: Promise<{ slug: string }> }) {

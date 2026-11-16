@@ -1,6 +1,8 @@
 // SEO helpers: canonical URLs, descriptions and JSON-LD structured data
 // (schema.org) for search engines and AI crawlers.
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import type { Metadata } from 'next';
 import type { BioInfo } from './bio';
 import type { ReleaseInfo } from './github';
@@ -8,6 +10,17 @@ import type { SiteInfo } from './site-types';
 import type { Project } from './types';
 
 export const FALLBACK_BASE = 'https://urbandrone.xyz';
+
+/**
+ * Link-preview image for a project: a share card at public/og/<section>/<slug>.jpg
+ * (1200×630, light, made for previews) wins over the cover, which can be
+ * transparent or dark and renders as a black box on other sites.
+ */
+export function shareImage(p: Project): string | undefined {
+  const card = `/og/${p.section}/${p.slug}.jpg`;
+  if (existsSync(path.join(process.cwd(), 'public', card))) return card;
+  return (p.cover ?? p.media[0])?.url;
+}
 
 export function baseUrl(site: SiteInfo): string {
   return (site.url || FALLBACK_BASE).replace(/\/$/, '');
