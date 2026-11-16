@@ -210,6 +210,8 @@ SMTP_HOST/PORT/USER/PASS, MAIL_FROM     # optional, password-reset mail
   are at most a day behind. For an immediate update, push anything or re-run the workflow.
   (An instant rebuild per release would need a `repository_dispatch` of type
   `release-published` sent from the release repo with a token — not set up.)
+- **New Lab project** → also give it a share card (link-preview image): see
+  `design-system/share-cards/README.md`. Without one, the preview uses the cover.
 - **Feature works on the home** → Projects → *Featured on the home page*.
 - **Move a project to Collabs/Lab** → editor → Section.
 - **Re-encode all media** (quality/width change in `lib/tezos/config.ts`) →
@@ -251,3 +253,4 @@ Dated so a future reader knows what was decided when, and why.
 | 2026-09-21 | Bing's SEO checker flagged short titles and out-of-range descriptions: titles are now 30–60 chars (`projectTitle`) and descriptions 70–160 (`clip`, `projectDescription`) on all 95 pages (`ac9c3b3`). Its "H1 tag missing" was a stale crawl — every page has exactly one. |
 | 2026-09-28 | **Credential leak fixed.** The committed `db/custom.db` had published the admin username, e-mail and password hash. Password rotated; account moved to the gitignored `db/auth.json` (`85ccc92`); auth tables dropped from the database (`3b36b67`). Full auth flow re-verified: setup, login by name and e-mail, bad password, route guard, account change, forgot → reset → token reuse refused. |
 | 2026-10-25 | **ArtLux download buttons were 404** (site built 2026-10-21 still pointed at v0.33.2, since retired to a draft). Deploy workflow now also runs daily so release links follow new versions (`f3bb1d1`). All 22 external Lab links checked: fine. |
+| 2026-11-16 | **Share cards.** Link previews of Lab pages were black (transparent logo covers, dark screenshots). Each Lab project now has an illustrated 1200×630 card in `public/og/lab/` used as `og:image` (`shareImage()`, `2a50251`); generator in `design-system/share-cards/`. The course sites (3DVIZ, AI_GEN_NARRATIVES, gaussian-splatting, and `/recits-interieurs/`) got Open Graph tags and the same card. |
